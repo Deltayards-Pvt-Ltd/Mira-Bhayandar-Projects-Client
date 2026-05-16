@@ -1,0 +1,294 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #0a1628;
+  --color-navy-light: #162440;
+  --color-gold: #d4a853;
+  --color-gold-light: #e8c378;
+  --color-gold-dark: #b88f3e;
+  /** Dark gold for small type on white (readable vs. --color-gold) */
+  --color-gold-ink: #5c4518;
+  --color-cream: #f5f0e6;
+
+  --font-heading: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-editorial: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+html {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  min-height: 100dvh;
+  background: var(--color-navy);
+  color: var(--color-cream);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100%;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Slow Ken-Burns zoom for hero media — restarts on key change */
+@keyframes mb-kenburns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+.animate-kenburns {
+  animation: mb-kenburns 7.5s linear forwards;
+}
+
+@keyframes hero-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.hero-fade-in {
+  animation: hero-fade-in 0.75s ease-out forwards;
+}
+
+/* Scroll-reveal — toggled by IntersectionObserver via .is-visible */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Featured projects — fade in on scroll (stagger via --featured-fade-delay) */
+.featured-fade {
+  opacity: 0;
+  transition: opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--featured-fade-delay, 0ms);
+  will-change: opacity;
+}
+.featured-fade.is-visible {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .featured-fade {
+    opacity: 1;
+    transition: none;
+  }
+}
+
+/* Gold gradient text — used in headings/accents */
+.text-gradient-gold {
+  background: linear-gradient(135deg, #d4a853 0%, #e8c378 50%, #b88f3e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Deep navy gradient surface for storytelling sections */
+.bg-navy-gradient {
+  background: linear-gradient(180deg, #0a1628 0%, #122036 60%, #0a1628 100%);
+}
+
+/* Subtle film grain on dark sections (mirabhayandar-style) */
+.noise-overlay {
+  position: relative;
+}
+.noise-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  z-index: 1;
+}
+
+/* Architectural vision — gold wipe (RTL exit) + copy from right */
+.arch-vision-cover {
+  transform: translate3d(0, 0, 0);
+  transition: transform 1.05s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.arch-vision-cover.is-visible {
+  transform: translate3d(-100%, 0, 0);
+}
+.arch-vision-text {
+  opacity: 0;
+  transform: translate3d(40px, 0, 0);
+  transition:
+    opacity 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.32s,
+    transform 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.32s;
+}
+.arch-vision-text.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .arch-vision-cover {
+    transition: none;
+  }
+  .arch-vision-cover.is-visible {
+    transform: translate3d(-100%, 0, 0);
+  }
+  .arch-vision-text.is-visible {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Mini About — icon ink: gold on the pill by default, black while card is hovered */
+.mini-about-card-icon-well {
+  color: var(--color-gold);
+  transition: color 0.22s ease;
+}
+.mini-about-card:hover .mini-about-card-icon-well {
+  color: #000000;
+}
+.mini-about-clock-hands {
+  color: var(--color-navy);
+  transition: color 0.22s ease;
+}
+.mini-about-card:hover .mini-about-clock-hands {
+  color: var(--color-gold);
+}
+
+/* Mini About — trust card icons (animate on .mini-about-card:hover only) */
+.mini-about-card:hover .mini-about-icon-shield-wrap {
+  animation: mb-mini-shield-live 1.35s ease-in-out both;
+}
+@keyframes mb-mini-shield-live {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  15% {
+    transform: rotate(-8deg);
+  }
+  30% {
+    transform: rotate(7deg);
+  }
+  45% {
+    transform: rotate(-5deg);
+  }
+  60% {
+    transform: rotate(3deg);
+  }
+  75% {
+    transform: rotate(0deg);
+  }
+}
+
+.mini-about-card:hover .mini-about-icon-building-wrap .mini-about-building-rise {
+  animation: mb-mini-building-rise 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.mini-about-building-window {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.mini-about-card:hover .mini-about-icon-building-wrap .mini-about-building-window {
+  animation: mb-mini-window-in 0.58s cubic-bezier(0.34, 1.2, 0.64, 1) both;
+  animation-delay: calc(160ms + var(--mini-about-window-i, 0) * 65ms);
+}
+@keyframes mb-mini-building-rise {
+  from {
+    transform: translateY(10px);
+    opacity: 0.25;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes mb-mini-window-in {
+  from {
+    opacity: 0.15;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.mini-about-card:hover .mini-about-icon-award-wrap svg {
+  animation: mb-mini-award-pop 1.15s cubic-bezier(0.34, 1.35, 0.64, 1) both;
+  transform-origin: center;
+}
+@keyframes mb-mini-award-pop {
+  0% {
+    transform: scale(0.82);
+  }
+  58% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.mini-about-card:hover .mini-about-icon-clock-wrap .mini-about-clock-hands {
+  animation: mb-mini-clock-tick 1.45s cubic-bezier(0.34, 1.45, 0.64, 1) both;
+  transform-origin: 12px 12px;
+  transform-box: fill-box;
+}
+@keyframes mb-mini-clock-tick {
+  from {
+    transform: rotate(-32deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mini-about-card:hover .mini-about-icon-shield-wrap,
+  .mini-about-card:hover .mini-about-icon-building-wrap .mini-about-building-rise,
+  .mini-about-card:hover .mini-about-icon-building-wrap .mini-about-building-window,
+  .mini-about-card:hover .mini-about-icon-award-wrap svg,
+  .mini-about-card:hover .mini-about-icon-clock-wrap .mini-about-clock-hands {
+    animation: none !important;
+  }
+  .mini-about-icon-building-wrap .mini-about-building-rise,
+  .mini-about-icon-building-wrap .mini-about-building-window {
+    opacity: 1;
+    transform: none;
+  }
+  .mini-about-icon-award-wrap svg {
+    transform: none;
+  }
+  .mini-about-icon-clock-wrap .mini-about-clock-hands {
+    transform: none;
+  }
+}
+
+/* Hide default scrollbar inside the hero text inputs */
+input:focus {
+  outline: none;
+}
