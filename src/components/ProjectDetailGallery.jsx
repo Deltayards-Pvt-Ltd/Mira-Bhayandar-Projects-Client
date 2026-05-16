@@ -212,13 +212,6 @@ export default function ProjectDetailGallery({ project, assetUrl }) {
           style={{ fontFamily: "var(--font-heading)" }}
         >
           Photos
-          <span
-            className="italic text-gold-dark"
-            style={{ fontFamily: "var(--font-editorial)" }}
-            aria-hidden
-          >
-            .
-          </span>
         </h2>
 
         <ul className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">

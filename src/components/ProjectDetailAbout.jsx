@@ -24,13 +24,6 @@ export default function ProjectDetailAbout({ project }) {
               style={{ fontFamily: "var(--font-heading)" }}
             >
               Overview
-              <span
-                className="italic text-gold-dark"
-                style={{ fontFamily: "var(--font-editorial)" }}
-                aria-hidden
-              >
-                .
-              </span>
             </h2>
             <div className="mt-6 max-w-3xl text-base leading-[1.75] text-navy/78 sm:text-lg">
               <p className="whitespace-pre-line">{description}</p>
@@ -49,13 +42,6 @@ export default function ProjectDetailAbout({ project }) {
               style={{ fontFamily: "var(--font-heading)" }}
             >
               Amenities
-              <span
-                className="italic text-gold-dark"
-                style={{ fontFamily: "var(--font-editorial)" }}
-                aria-hidden
-              >
-                .
-              </span>
             </h2>
             <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {features.map((label) => (

@@ -144,13 +144,6 @@ export default function ProjectDetailIntro({ project, assetUrl }) {
               style={{ fontFamily: "var(--font-heading)" }}
             >
               {name}
-              <span
-                className="italic text-gold-light"
-                style={{ fontFamily: "var(--font-editorial)" }}
-                aria-hidden
-              >
-                .
-              </span>
             </h1>
 
             {builder ? (
