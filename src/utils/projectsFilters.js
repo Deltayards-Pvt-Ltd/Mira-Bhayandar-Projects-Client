@@ -13,8 +13,19 @@ export const CONFIG_OPTIONS = [
   { id: "2-bhk", label: "2 BHK" },
   { id: "3-bhk", label: "3 BHK" },
   { id: "4-bhk", label: "4 BHK" },
+  { id: "5-bhk", label: "5 BHK" },
   { id: "jodi", label: "Jodi" },
 ];
+
+/** @type {Record<string, string>} */
+export const LOCALITY_ID_TO_LABEL = Object.fromEntries(
+  LOCALITY_OPTIONS.map((o) => [o.id, o.label]),
+);
+
+/** @type {Record<string, string>} */
+export const CONFIG_ID_TO_LABEL = Object.fromEntries(
+  CONFIG_OPTIONS.map((o) => [o.id, o.label]),
+);
 
 function norm(s) {
   return String(s || "")
@@ -75,7 +86,7 @@ function bhkCountsInTitle(title) {
 function configTitleMatch(title, configId) {
   const s = norm(title);
   if (configId === "jodi") return s.includes("jodi");
-  const n = { "1-bhk": 1, "2-bhk": 2, "3-bhk": 3, "4-bhk": 4 }[configId];
+  const n = { "1-bhk": 1, "2-bhk": 2, "3-bhk": 3, "4-bhk": 4, "5-bhk": 5 }[configId];
   if (!Number.isFinite(n)) return false;
   return bhkCountsInTitle(title).has(n);
 }
@@ -118,4 +129,64 @@ export function filterProjects(projects, nameQuery, localityIds, configIds) {
     }
     return projectPassesFilters(p, localityIds, configIds);
   });
+}
+
+/**
+ * @param {Iterable<string>} labels locality or config display labels
+ * @param {FilterOption[]} options
+ */
+function idsFromLabels(labels, options) {
+  const byLabel = Object.fromEntries(options.map((o) => [norm(o.label), o.id]));
+  return [...labels].map((l) => byLabel[norm(l)]).filter(Boolean);
+}
+
+/** @param {Iterable<string>} labels */
+export function localityIdsFromLabels(labels) {
+  return idsFromLabels(labels, LOCALITY_OPTIONS);
+}
+
+/** @param {Iterable<string>} labels */
+export function configIdsFromLabels(labels) {
+  return idsFromLabels(labels, CONFIG_OPTIONS);
+}
+
+/**
+ * @param {{ q?: string; localityIds?: string[]; configIds?: string[] }} filters
+ */
+export function buildProjectsSearchParams({
+  q = "",
+  localityIds = [],
+  configIds = [],
+}) {
+  const params = new URLSearchParams();
+  const trimmed = String(q || "").trim();
+  if (trimmed) params.set("q", trimmed);
+  if (localityIds.length) params.set("locality", localityIds.join(","));
+  if (configIds.length) params.set("config", configIds.join(","));
+  return params;
+}
+
+/**
+ * @param {{ q?: string; localityIds?: string[]; configIds?: string[] }} filters
+ */
+export function buildProjectsPath(filters) {
+  const params = buildProjectsSearchParams(filters);
+  const qs = params.toString();
+  return qs ? `/projects?${qs}` : "/projects";
+}
+
+/**
+ * @param {URLSearchParams} searchParams
+ */
+export function parseProjectsSearchParams(searchParams) {
+  const q = (searchParams.get("q") || "").trim();
+  const localityIds = (searchParams.get("locality") || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const configIds = (searchParams.get("config") || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return { q, localityIds, configIds };
 }

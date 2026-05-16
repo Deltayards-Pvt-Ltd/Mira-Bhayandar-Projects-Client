@@ -1,5 +1,13 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
+import {
+  CONFIG_OPTIONS,
+  LOCALITY_OPTIONS,
+  buildProjectsPath,
+  configIdsFromLabels,
+  localityIdsFromLabels,
+} from "../utils/projectsFilters";
 
 /** Drop your file in `client/public/videos/` and set the filename here. */
 const HERO_VIDEO_SRC = "/videos/hero.mp4";
@@ -9,12 +17,8 @@ const FLOAT_MARGIN_PX = 12;
 const FLOAT_LOCALITY_MAX_W = 448;
 const FLOAT_FLAT_MAX_W = 416;
 
-const LOCALITIES = [
-  "Bhayandar West",
-  "Bhayandar East",
-  "Mira Road",
-];
-const FLAT_OPTIONS = ["1 bhk", "2 bhk", "3 bhk", "4 bhk", "5 bhk", "jodi"];
+const LOCALITIES = LOCALITY_OPTIONS.map((o) => o.label);
+const FLAT_OPTIONS = CONFIG_OPTIONS.map((o) => o.label);
 
 const LOCALITY_SHORT = {
   "Bhayandar West": "B. West",
@@ -33,6 +37,7 @@ function shortFlatLabel(name) {
 }
 
 export default function HeroCarousel() {
+  const navigate = useNavigate();
   const [videoFailed, setVideoFailed] = useState(false);
   const [openPanel, setOpenPanel] = useState(null);
   const [localities, setLocalities] = useState(() => new Set());
@@ -123,6 +128,17 @@ export default function HeroCarousel() {
     });
   }
 
+  function handleSearch(e) {
+    e.preventDefault();
+    setOpenPanel(null);
+    navigate(
+      buildProjectsPath({
+        localityIds: localityIdsFromLabels(localities),
+        configIds: configIdsFromLabels(flats),
+      }),
+    );
+  }
+
   return (
     <section className="relative z-20 min-h-[100dvh] w-full overflow-x-hidden bg-navy">
       <div className="absolute inset-0 overflow-hidden">
@@ -192,7 +208,7 @@ export default function HeroCarousel() {
           <div className="flex flex-col gap-6 sm:gap-8">
             <form
               ref={searchBarRef}
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={handleSearch}
               className="mx-auto w-full max-w-3xl"
             >
               <div className="flex flex-col gap-2 rounded-2xl border border-white/20 bg-white/[0.12] p-2 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.55)] backdrop-blur-md sm:flex-row sm:items-stretch sm:rounded-full sm:p-1.5 sm:pl-3">
@@ -292,7 +308,7 @@ export default function HeroCarousel() {
                           setOpenPanel((p) => (p === "flat" ? null : "flat"))
                         }
                       >
-                        BHK / type
+                        BHK / Type
                       </button>
                     ) : (
                       <div

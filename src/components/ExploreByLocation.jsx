@@ -1,7 +1,12 @@
 import { useLayoutEffect, useState } from "react";
 import { useReveal } from "../hooks/useReveal";
 import { locationAreas } from "../data/locationAreas";
+import { LOCALITY_OPTIONS, buildProjectsPath } from "../utils/projectsFilters";
 import LocationCard from "./LocationCard";
+
+const LOCALITY_ID_BY_LABEL = Object.fromEntries(
+  LOCALITY_OPTIONS.map((o) => [o.label, o.id]),
+);
 
 export default function ExploreByLocation() {
   const [sectionRef, visible] = useReveal();
@@ -70,7 +75,11 @@ export default function ExploreByLocation() {
               <LocationCard
                 name={area.name}
                 image={area.image}
-                to={`/projects?q=${encodeURIComponent(area.name)}`}
+                to={buildProjectsPath({
+                  localityIds: LOCALITY_ID_BY_LABEL[area.name]
+                    ? [LOCALITY_ID_BY_LABEL[area.name]]
+                    : [],
+                })}
               />
             </div>
           ))}

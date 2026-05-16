@@ -1,6 +1,3 @@
-/** Placeholder until backend stores official RERA registration number. */
-const SAMPLE_RERA_DISPLAY = "P51800012345";
-
 function MapPinIcon({ className }) {
   return (
     <svg
@@ -104,20 +101,37 @@ export default function ProjectDetailIntro({ project, assetUrl }) {
   const layouts = project?.layouts;
   const configLine = formatConfigDisplay(layouts);
   const possession = formatPossession(project?.reraPossession);
+  const reraNo = String(project?.reraNo || "").trim();
   const brochure = (project?.browcherPdf || "").trim();
   const reraCert = (project?.reraCertificate || "").trim();
   const contactNumber = String(project?.contactNumber || "").trim();
-  const logo = (project?.logo || "").trim();
+  const bannerImage = (project?.bannerImage || "").trim();
+  const bannerUrl = bannerImage ? assetUrl(bannerImage) : "";
 
   const brochureHref = brochure ? assetUrl(brochure) : "";
   const reraHref = reraCert ? assetUrl(reraCert) : "";
   const telHref = contactNumber ? `tel:${contactNumber.replace(/\s/g, "")}` : "";
 
   return (
-    <section className="relative border-b border-white/10 bg-navy-gradient text-cream noise-overlay">
-      <div className="relative z-[2] mx-auto max-w-6xl px-4 pb-10 pt-[calc(5.5rem+env(safe-area-inset-top,0px))] sm:px-6 sm:pb-14 sm:pt-28 md:pt-32 lg:px-8">
-        <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-12">
-          <div className="min-w-0 flex-1">
+    <section className="relative overflow-hidden border-b border-white/10 text-cream">
+      <div className="pointer-events-none absolute inset-0" aria-hidden>
+        {bannerUrl ? (
+          <>
+            <img
+              src={bannerUrl}
+              alt=""
+              className="h-full w-full object-cover object-[55%_center] sm:object-[60%_25%] lg:object-[58%_20%]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0a1628]/92 via-[#0a1628]/55 to-[#0a1628]/10" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628]/50 via-transparent to-[#0a1628]/30" />
+          </>
+        ) : (
+          <div className="noise-overlay absolute inset-0 bg-navy-gradient" />
+        )}
+      </div>
+
+      <div className="relative z-[2] mx-auto flex min-h-[clamp(26rem,56.25vw,40rem)] max-w-6xl flex-col justify-end px-4 pb-10 pt-[calc(5.5rem+env(safe-area-inset-top,0px))] sm:px-6 sm:pb-14 sm:pt-28 md:pt-32 lg:min-h-[clamp(30rem,62vw,48rem)] lg:px-8">
+        <div className="w-full max-w-xl lg:max-w-[46%]">
             {locationRaw ? (
               <p className="mb-4 flex items-center gap-2 text-sm font-medium text-white/70">
                 <MapPinIcon className="shrink-0 text-gold" aria-hidden />
@@ -145,11 +159,7 @@ export default function ProjectDetailIntro({ project, assetUrl }) {
               </p>
             ) : null}
 
-            <div
-              className={`my-8 grid gap-x-8 gap-y-4 border-t border-white/10 pt-8 sm:gap-x-10 ${
-                possession ? "sm:grid-cols-3" : "sm:grid-cols-2"
-              }`}
-            >
+            <div className="my-8 grid gap-4 border-t border-white/10 pt-8 sm:grid-cols-2 sm:gap-x-8">
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gold">
                   Configurations
@@ -158,16 +168,16 @@ export default function ProjectDetailIntro({ project, assetUrl }) {
                   {configLine || "—"}
                 </p>
               </div>
-              <div className="min-w-0 border-t border-white/10 pt-4 sm:border-t-0 sm:pt-0 sm:border-l sm:border-white/15 sm:pl-8">
+              <div className="min-w-0">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gold">
                   RERA
                 </p>
                 <p className="mt-1.5 text-base font-medium leading-snug tracking-tight text-white/90">
-                  {SAMPLE_RERA_DISPLAY}
+                  {reraNo || "—"}
                 </p>
               </div>
               {possession ? (
-                <div className="min-w-0 border-t border-white/10 pt-4 sm:border-t-0 sm:pt-0 sm:border-l sm:border-white/15 sm:pl-8">
+                <div className="min-w-0 sm:col-span-2">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gold">
                     Possession
                   </p>
@@ -211,17 +221,6 @@ export default function ProjectDetailIntro({ project, assetUrl }) {
                 </a>
               ) : null}
             </div>
-          </div>
-
-          {logo ? (
-            <div className="mx-auto flex w-full max-w-[220px] shrink-0 items-center justify-center rounded-2xl border-2 border-white/15 bg-white p-8 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.35)] sm:max-w-[260px] lg:mx-0 lg:max-w-[280px]">
-              <img
-                src={assetUrl(logo)}
-                alt={`${name} logo`}
-                className="max-h-28 w-auto max-w-full object-contain sm:max-h-32"
-              />
-            </div>
-          ) : null}
         </div>
       </div>
     </section>
