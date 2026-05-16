@@ -13,7 +13,7 @@ import DreamHomeCta from "../components/DreamHomeCta";
 import ContactSection from "../components/ContactSection";
 
 export default function Home() {
-  const { backendUrl, usingDevBackendDefault } = useContext(AppContext) ?? {};
+  const { backendUrl } = useContext(AppContext) ?? {};
 
   return (
     <>
@@ -32,15 +32,7 @@ export default function Home() {
       {!backendUrl && (
         <div className="break-words bg-amber-500/10 px-3 py-3 text-center text-xs text-amber-200 sm:px-4 sm:text-sm">
           Set <code className="font-mono">VITE_BACKEND_URL</code> in{" "}
-          <code className="font-mono">client/.env</code> for production. Local dev
-          defaults to <code className="font-mono">http://localhost:5000</code>.
-        </div>
-      )}
-      {usingDevBackendDefault && (
-        <div className="break-words border-t border-white/10 bg-navy/90 px-3 py-2 text-center text-[11px] text-white/50 sm:px-4 sm:text-xs">
-          Using dev API default <code className="font-mono text-white/70">http://localhost:5000</code>
-          {" — "}add <code className="font-mono">VITE_BACKEND_URL</code> in{" "}
-          <code className="font-mono">.env</code> to override.
+          <code className="font-mono">client/.env</code>.
         </div>
       )}
     </>

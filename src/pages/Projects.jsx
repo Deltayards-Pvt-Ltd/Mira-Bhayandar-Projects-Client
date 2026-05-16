@@ -1,9 +1,14 @@
-import { useCallback, useContext, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
 import ProjectCard from "../components/ProjectCard";
 import DreamHomeCta from "../components/DreamHomeCta";
 import ProjectsFilterToolbar from "../components/ProjectsFilterToolbar";
-import { filterProjects } from "../utils/projectsFilters";
+import {
+  buildProjectsSearchParams,
+  filterProjects,
+  parseProjectsSearchParams,
+} from "../utils/projectsFilters";
 
 function toggleId(list, id) {
   if (list.includes(id)) return list.filter((x) => x !== id);
@@ -12,6 +17,7 @@ function toggleId(list, id) {
 
 export default function Projects() {
   const ctx = useContext(AppContext);
+  const [searchParams, setSearchParams] = useSearchParams();
   const allProjects = useMemo(() => ctx?.allProjects ?? [], [ctx?.allProjects]);
   const loading = ctx?.loading ?? false;
   const assetUrl = ctx?.assetUrl ?? ((p) => p ?? "");
@@ -21,9 +27,34 @@ export default function Projects() {
   const [localitySel, setLocalitySel] = useState([]);
   const [configSel, setConfigSel] = useState([]);
 
+  useEffect(() => {
+    const { q, localityIds, configIds } = parseProjectsSearchParams(searchParams);
+    setSearchInput(q);
+    setAppliedSearch(q);
+    setLocalitySel(localityIds);
+    setConfigSel(configIds);
+  }, [searchParams]);
+
+  const syncUrl = useCallback(
+    (overrides = {}) => {
+      const q = overrides.q !== undefined ? overrides.q : appliedSearch;
+      const localityIds =
+        overrides.localityIds !== undefined ? overrides.localityIds : localitySel;
+      const configIds =
+        overrides.configIds !== undefined ? overrides.configIds : configSel;
+      setSearchParams(
+        buildProjectsSearchParams({ q, localityIds, configIds }),
+        { replace: true },
+      );
+    },
+    [appliedSearch, localitySel, configSel, setSearchParams],
+  );
+
   const handleSearchSubmit = useCallback(() => {
-    setAppliedSearch(searchInput.trim());
-  }, [searchInput]);
+    const q = searchInput.trim();
+    setAppliedSearch(q);
+    syncUrl({ q });
+  }, [searchInput, syncUrl]);
 
   const visibleProjects = useMemo(
     () =>
@@ -86,13 +117,30 @@ export default function Projects() {
               onSearchInputChange={setSearchInput}
               onSearchSubmit={handleSearchSubmit}
               localitySelection={localitySel}
-              onToggleLocality={(id) =>
-                setLocalitySel((prev) => toggleId(prev, id))
-              }
-              onClearLocality={() => setLocalitySel([])}
+              onToggleLocality={(id) => {
+                const next = toggleId(localitySel, id);
+                setLocalitySel(next);
+                syncUrl({ localityIds: next });
+              }}
+              onClearLocality={() => {
+                setLocalitySel([]);
+                syncUrl({ localityIds: [] });
+              }}
               configSelection={configSel}
-              onToggleConfig={(id) => setConfigSel((prev) => toggleId(prev, id))}
-              onClearConfig={() => setConfigSel([])}
+              onToggleConfig={(id) => {
+                const next = toggleId(configSel, id);
+                setConfigSel(next);
+                syncUrl({ configIds: next });
+              }}
+              onClearConfig={() => {
+                setConfigSel([]);
+                syncUrl({ configIds: [] });
+              }}
+              onClearAll={() => {
+                setLocalitySel([]);
+                setConfigSel([]);
+                syncUrl({ localityIds: [], configIds: [] });
+              }}
             />
             <p className="mt-6 text-sm text-navy/55">{resultsLine}</p>
           </div>

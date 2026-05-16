@@ -14,12 +14,7 @@ export default function AppContextProvider({ children }) {
   });
   const [loading, setLoading] = useState(true);
 
-  const envUrl = (import.meta.env.VITE_BACKEND_URL ?? "").trim().replace(/\/+$/, "");
-  /** In dev, default to local API without copying .env (still override via .env). */
-  const backendUrl =
-    envUrl || (import.meta.env.DEV ? "http://localhost:5000" : "");
-  const usingDevBackendDefault =
-    import.meta.env.DEV && !envUrl && Boolean(backendUrl);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const getAllProjects = useCallback(async () => {
     try {
@@ -131,7 +126,6 @@ export default function AppContextProvider({ children }) {
       contactSettings,
       loading,
       backendUrl,
-      usingDevBackendDefault,
       assetUrl,
       refetchProjects: getAllProjects,
       refetchTestimonials: getTestimonials,
@@ -145,7 +139,6 @@ export default function AppContextProvider({ children }) {
       contactSettings,
       loading,
       backendUrl,
-      usingDevBackendDefault,
       assetUrl,
       getAllProjects,
       getTestimonials,

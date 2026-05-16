@@ -143,7 +143,7 @@ export default function ProjectCard({ project, assetUrl }) {
 
   return (
     <article
-      className="group flex h-full flex-col overflow-hidden rounded-2xl border-2 border-navy/[0.08] bg-white shadow-[0_8px_32px_-8px_rgba(10,22,40,0.1),0_2px_8px_-2px_rgba(10,22,40,0.06)] transition-[border-color,box-shadow] duration-300 hover:border-gold hover:shadow-[0_20px_48px_-12px_rgba(10,22,40,0.14)]"
+      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-navy/12 bg-white shadow-[0_2px_6px_rgba(10,22,40,0.09),0_14px_44px_-4px_rgba(10,22,40,0.18)] transition-[border-color,box-shadow] duration-300 hover:border-gold/55 hover:shadow-[0_4px_10px_rgba(10,22,40,0.1),0_24px_56px_-6px_rgba(10,22,40,0.22)]"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >

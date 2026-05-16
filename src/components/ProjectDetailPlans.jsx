@@ -55,6 +55,9 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
   const title = String(active?.title || "Plan").trim() || "Plan";
   const areaLine = formatAreaSqft(active?.area);
   const imgSrc = assetUrl(String(active.image));
+  const navOffset = "calc(5.5rem + env(safe-area-inset-top, 0px))";
+  const planViewportMax =
+    "min(calc(100dvh - 5.5rem - env(safe-area-inset-top, 0px) - 11.5rem), 28rem)";
 
   return (
     <section
@@ -69,14 +72,14 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
             "radial-gradient(ellipse 80% 55% at 50% -10%, rgba(212,168,83,0.08) 0%, transparent 55%)",
         }}
       />
-      <div className="relative z-[2] mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+      <div className="relative z-[2] mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-14">
         <header className="max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-light">
             Floor plans
           </p>
           <h2
             id="project-plans-heading"
-            className="mt-2 text-3xl font-normal tracking-tight text-white sm:text-4xl md:text-[2.75rem] md:leading-tight"
+            className="mt-1.5 text-2xl font-normal tracking-tight text-white sm:text-3xl md:text-[2.35rem] md:leading-tight"
             style={{ fontFamily: "var(--font-heading)" }}
           >
             Plans
@@ -91,53 +94,58 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
         </header>
 
         <div
-          className="mt-8 flex flex-wrap gap-2.5"
-          role="tablist"
-          aria-label="Layout plans"
+          className="sticky z-20 -mx-4 mt-5 border-b border-white/10 bg-navy-gradient/95 px-4 pb-4 pt-1 backdrop-blur-md sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+          style={{ top: navOffset }}
         >
-          {layouts.map((layout, i) => {
-            const label = String(layout?.title || `Plan ${i + 1}`).trim();
-            const selected = i === idx;
-            return (
-              <button
-                key={`${String(layout?._id ?? "")}-${i}`}
-                type="button"
-                role="tab"
-                aria-selected={selected}
-                id={`plan-tab-${i}`}
-                aria-controls="plan-panel"
-                onClick={() => setIdx(i)}
-                className={`rounded-full border-2 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] transition-[background-color,border-color,color,box-shadow,transform] duration-200 ${
-                  selected
-                    ? "border-gold bg-gold text-navy shadow-[0_8px_28px_-6px_rgba(212,168,83,0.45)]"
-                    : "border-white/25 bg-white/[0.06] text-white/90 backdrop-blur-sm hover:border-gold/55 hover:bg-white/[0.1] hover:text-white"
-                }`}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="mt-8 flex flex-col gap-4 border-t border-white/10 pt-8 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold">
-              Selected layout
-            </p>
-            <p className="mt-1.5 text-xl font-medium tracking-tight text-white sm:text-2xl">
-              {title}
-            </p>
+          <div
+            className="flex flex-wrap gap-2"
+            role="tablist"
+            aria-label="Layout plans"
+          >
+            {layouts.map((layout, i) => {
+              const label = String(layout?.title || `Plan ${i + 1}`).trim();
+              const selected = i === idx;
+              return (
+                <button
+                  key={`${String(layout?._id ?? "")}-${i}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={selected}
+                  id={`plan-tab-${i}`}
+                  aria-controls="plan-panel"
+                  onClick={() => setIdx(i)}
+                  className={`rounded-full border-2 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition-[background-color,border-color,color,box-shadow] duration-200 sm:px-5 sm:py-2.5 sm:text-xs sm:tracking-[0.14em] ${
+                    selected
+                      ? "border-gold bg-gold text-navy shadow-[0_8px_28px_-6px_rgba(212,168,83,0.45)]"
+                      : "border-white/25 bg-white/[0.06] text-white/90 backdrop-blur-sm hover:border-gold/55 hover:bg-white/[0.1] hover:text-white"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
-          <div className="sm:text-right">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold">
-              Super built-up area
-            </p>
-            <p className="mt-1.5 text-xl font-medium tabular-nums tracking-tight text-white/95 sm:text-2xl">
-              {areaLine || "—"}
-            </p>
-            {!areaLine ? (
-              <p className="mt-1.5 text-xs text-white/45">Details in brochure</p>
-            ) : null}
+
+          <div className="mt-3 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold">
+                Selected layout
+              </p>
+              <p className="mt-0.5 text-lg font-medium tracking-tight text-white sm:text-xl">
+                {title}
+              </p>
+            </div>
+            <div className="sm:text-right">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold">
+                Super built-up area
+              </p>
+              <p className="mt-0.5 text-lg font-medium tabular-nums tracking-tight text-white/95 sm:text-xl">
+                {areaLine || "—"}
+              </p>
+              {!areaLine ? (
+                <p className="mt-0.5 text-xs text-white/45">Details in brochure</p>
+              ) : null}
+            </div>
           </div>
         </div>
 
@@ -145,14 +153,18 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
           id="plan-panel"
           role="tabpanel"
           aria-labelledby={`plan-tab-${idx}`}
-          className="mt-8 overflow-hidden rounded-2xl border border-white/15 bg-white/[0.04] p-1 shadow-[0_24px_80px_-28px_rgba(0,0,0,0.55)] ring-1 ring-white/10 backdrop-blur-sm sm:p-1.5"
+          className="mt-4 overflow-hidden rounded-2xl border border-white/15 bg-white/[0.04] p-1 shadow-[0_24px_80px_-28px_rgba(0,0,0,0.55)] ring-1 ring-white/10 backdrop-blur-sm sm:mt-5 sm:p-1.5"
         >
-          <div className="flex min-h-[220px] items-center justify-center rounded-[14px] bg-white p-3 sm:p-5 md:p-8">
+          <div
+            className="flex items-center justify-center overflow-auto rounded-[14px] bg-white p-2 sm:p-4"
+            style={{ maxHeight: planViewportMax }}
+          >
             <img
               key={imgSrc}
               src={imgSrc}
               alt={`${title} floor plan`}
-              className="max-h-[min(70vh,560px)] w-full object-contain"
+              className="mx-auto w-full max-w-full object-contain"
+              style={{ maxHeight: planViewportMax }}
               loading="lazy"
               decoding="async"
             />
@@ -164,7 +176,7 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
             href={brochureHref}
             target="_blank"
             rel="noopener noreferrer"
-            className="group mt-8 inline-flex items-center gap-2.5 text-sm font-semibold uppercase tracking-[0.14em] text-gold-light transition-colors hover:text-gold"
+            className="group mt-5 inline-flex items-center gap-2.5 text-sm font-semibold uppercase tracking-[0.14em] text-gold-light transition-colors hover:text-gold sm:mt-6"
           >
             <DownloadIcon className="text-gold transition-colors group-hover:text-gold-light" />
             Download full brochure (PDF)
