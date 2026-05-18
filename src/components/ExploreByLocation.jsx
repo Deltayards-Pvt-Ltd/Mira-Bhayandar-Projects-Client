@@ -58,11 +58,11 @@ export default function ExploreByLocation() {
             className="mb-4 text-4xl tracking-tight text-navy md:text-5xl lg:text-6xl"
             style={{ fontFamily: "var(--font-heading)" }}
           >
-            Explore by Location
+            Pick Your Pick!
           </h2>
           <p className="mx-auto max-w-2xl font-sans text-base leading-relaxed text-navy/72 md:text-lg">
-            Each neighborhood has its own character. Find the one that fits your
-            lifestyle.
+            Each neighborhood has its own character. Find the one that fits you best
+
           </p>
         </header>
 
