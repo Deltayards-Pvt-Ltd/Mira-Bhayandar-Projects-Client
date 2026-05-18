@@ -13,6 +13,10 @@ export default function AppContextProvider({ children }) {
     whatsapp: "919876543210",
   });
   const [loading, setLoading] = useState(true);
+  const [projectFilters, setProjectFilters] = useState({
+    localities: [],
+    configurations: [],
+  });
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -77,6 +81,24 @@ export default function AppContextProvider({ children }) {
     }
   }, [backendUrl]);
 
+  const getProjectFilters = useCallback(async () => {
+    try {
+      const { data } = await axios.get(`${backendUrl}/api/project/filters`);
+      if (data?.success && data.filters) {
+        setProjectFilters({
+          localities: data.filters.localities ?? [],
+          configurations: data.filters.configurations ?? [],
+        });
+      } else {
+        console.warn("getProjectFilters:", data?.message);
+        setProjectFilters({ localities: [], configurations: [] });
+      }
+    } catch (err) {
+      console.error("getProjectFilters failed:", err?.message || err);
+      setProjectFilters({ localities: [], configurations: [] });
+    }
+  }, [backendUrl]);
+
   useEffect(() => {
     if (!backendUrl) {
       setTestimonials([]);
@@ -94,6 +116,7 @@ export default function AppContextProvider({ children }) {
       try {
         await Promise.all([
           getAllProjects(),
+          getProjectFilters(),
           getTestimonials(),
           getBlogs(),
           getContactSettings(),
@@ -105,7 +128,7 @@ export default function AppContextProvider({ children }) {
     return () => {
       cancelled = true;
     };
-  }, [backendUrl, getAllProjects, getTestimonials, getBlogs, getContactSettings]);
+  }, [backendUrl, getAllProjects, getProjectFilters, getTestimonials, getBlogs, getContactSettings]);
 
   /** Build a full URL for an asset path stored in the DB (e.g. "uploads/projects/xyz.mp4"). */
   const assetUrl = useCallback(
@@ -124,10 +147,12 @@ export default function AppContextProvider({ children }) {
       testimonials,
       blogs,
       contactSettings,
+      projectFilters,
       loading,
       backendUrl,
       assetUrl,
       refetchProjects: getAllProjects,
+      refetchProjectFilters: getProjectFilters,
       refetchTestimonials: getTestimonials,
       refetchBlogs: getBlogs,
       refetchContactSettings: getContactSettings,
@@ -137,10 +162,12 @@ export default function AppContextProvider({ children }) {
       testimonials,
       blogs,
       contactSettings,
+      projectFilters,
       loading,
       backendUrl,
       assetUrl,
       getAllProjects,
+      getProjectFilters,
       getTestimonials,
       getBlogs,
       getContactSettings,

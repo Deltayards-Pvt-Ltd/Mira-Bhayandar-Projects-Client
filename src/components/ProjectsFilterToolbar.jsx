@@ -1,10 +1,6 @@
-import { useEffect, useId, useMemo, useState } from "react";
-import {
-  CONFIG_ID_TO_LABEL,
-  CONFIG_OPTIONS,
-  LOCALITY_ID_TO_LABEL,
-  LOCALITY_OPTIONS,
-} from "../utils/projectsFilters";
+import { useContext, useEffect, useId, useMemo, useState } from "react";
+import { AppContext } from "../context/AppContext";
+import { idToLabelMap } from "../utils/projectsFilters";
 
 function SearchIcon({ className }) {
   return (
@@ -129,6 +125,19 @@ export default function ProjectsFilterToolbar({
   onClearConfig,
   onClearAll,
 }) {
+  const { projectFilters } = useContext(AppContext) ?? {};
+  const localityOptions = projectFilters?.localities ?? [];
+  const configOptions = projectFilters?.configurations ?? [];
+
+  const localityIdToLabel = useMemo(
+    () => idToLabelMap(localityOptions),
+    [localityOptions],
+  );
+  const configIdToLabel = useMemo(
+    () => idToLabelMap(configOptions),
+    [configOptions],
+  );
+
   const hasActiveFilters =
     localitySelection.length > 0 || configSelection.length > 0;
   const [filtersOpen, setFiltersOpen] = useState(hasActiveFilters);
@@ -142,15 +151,22 @@ export default function ProjectsFilterToolbar({
   const activeChips = useMemo(() => {
     const chips = [];
     for (const id of localitySelection) {
-      const label = LOCALITY_ID_TO_LABEL[id];
+      const label = localityIdToLabel[id];
       if (label) chips.push({ key: `loc-${id}`, label, onRemove: () => onToggleLocality(id) });
     }
     for (const id of configSelection) {
-      const label = CONFIG_ID_TO_LABEL[id];
+      const label = configIdToLabel[id];
       if (label) chips.push({ key: `cfg-${id}`, label, onRemove: () => onToggleConfig(id) });
     }
     return chips;
-  }, [localitySelection, configSelection, onToggleLocality, onToggleConfig]);
+  }, [
+    localitySelection,
+    configSelection,
+    localityIdToLabel,
+    configIdToLabel,
+    onToggleLocality,
+    onToggleConfig,
+  ]);
 
   const localityAll = localitySelection.length === 0;
   const configAll = configSelection.length === 0;
@@ -180,7 +196,8 @@ export default function ProjectsFilterToolbar({
           <button
             type="button"
             onClick={onSearchSubmit}
-            className="inline-flex h-12 shrink-0 items-center justify-center rounded-full border-2 border-navy bg-navy px-6 text-[11px] font-semibold uppercase tracking-[0.14em] text-cream transition-colors hover:bg-navy-light sm:h-auto sm:min-h-[48px]"
+            
+            className="inline-flex h-12 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-navy bg-navy px-6 text-[11px] font-semibold uppercase tracking-[0.14em] text-cream transition-colors hover:bg-navy-light sm:h-auto sm:min-h-[48px]"
           >
             Search
           </button>
@@ -245,7 +262,7 @@ export default function ProjectsFilterToolbar({
                     selected={localityAll}
                     onClick={onClearLocality}
                   />
-                  {LOCALITY_OPTIONS.map((opt) => (
+                  {localityOptions.map((opt) => (
                     <FilterPill
                       key={opt.id}
                       label={opt.label}
@@ -261,7 +278,7 @@ export default function ProjectsFilterToolbar({
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <FilterPill label="All" selected={configAll} onClick={onClearConfig} />
-                  {CONFIG_OPTIONS.map((opt) => (
+                  {configOptions.map((opt) => (
                     <FilterPill
                       key={opt.id}
                       label={opt.label}

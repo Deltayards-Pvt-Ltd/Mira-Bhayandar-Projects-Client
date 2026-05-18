@@ -1,9 +1,8 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import { AppContext } from "../context/AppContext";
 import {
-  CONFIG_OPTIONS,
-  LOCALITY_OPTIONS,
   buildProjectsPath,
   configIdsFromLabels,
   localityIdsFromLabels,
@@ -17,9 +16,6 @@ const FLOAT_MARGIN_PX = 12;
 const FLOAT_LOCALITY_MAX_W = 448;
 const FLOAT_FLAT_MAX_W = 416;
 
-const LOCALITIES = LOCALITY_OPTIONS.map((o) => o.label);
-const FLAT_OPTIONS = CONFIG_OPTIONS.map((o) => o.label);
-
 const LOCALITY_SHORT = {
   "Bhayandar West": "B. West",
   "Bhayandar East": "B. East",
@@ -31,13 +27,30 @@ function shortLocalityLabel(full) {
 }
 
 function shortFlatLabel(name) {
-  if (name === "jodi") return "Jodi";
-  const m = /^(\d+)\s*bhk$/i.exec(name.trim());
+  if (/^jodi$/i.test(String(name).trim())) return "Jodi";
+  const m = /^(\d+(?:\.\d+)?)\s*bhk$/i.exec(String(name).trim());
   return m ? `${m[1]}b` : name;
 }
 
 export default function HeroCarousel() {
   const navigate = useNavigate();
+  const { projectFilters } = useContext(AppContext) ?? {};
+  const localityOptions = useMemo(
+    () => projectFilters?.localities ?? [],
+    [projectFilters?.localities],
+  );
+  const configOptions = useMemo(
+    () => projectFilters?.configurations ?? [],
+    [projectFilters?.configurations],
+  );
+  const localityLabels = useMemo(
+    () => localityOptions.map((o) => o.label),
+    [localityOptions],
+  );
+  const configLabels = useMemo(
+    () => configOptions.map((o) => o.label),
+    [configOptions],
+  );
   const [videoFailed, setVideoFailed] = useState(false);
   const [openPanel, setOpenPanel] = useState(null);
   const [localities, setLocalities] = useState(() => new Set());
@@ -133,8 +146,8 @@ export default function HeroCarousel() {
     setOpenPanel(null);
     navigate(
       buildProjectsPath({
-        localityIds: localityIdsFromLabels(localities),
-        configIds: configIdsFromLabels(flats),
+        localityIds: localityIdsFromLabels(localities, localityOptions),
+        configIds: configIdsFromLabels(flats, configOptions),
       }),
     );
   }
@@ -342,7 +355,7 @@ export default function HeroCarousel() {
 
                 <button
                   type="submit"
-                  className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-gold px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-navy sm:w-auto sm:rounded-full sm:px-5 sm:py-2.5"
+                  className="inline-flex cursor-pointer w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-gold px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-navy sm:w-auto sm:rounded-full sm:px-5 sm:py-2.5"
                 >
                   <SearchIconSolid className="text-navy" />
                   Search
@@ -373,7 +386,7 @@ export default function HeroCarousel() {
                         Select area
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {LOCALITIES.map((name) => {
+                        {localityLabels.map((name) => {
                           const on = localities.has(name);
                           return (
                             <button
@@ -404,7 +417,7 @@ export default function HeroCarousel() {
                         BHK &amp; type
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {FLAT_OPTIONS.map((name) => {
+                        {configLabels.map((name) => {
                           const on = flats.has(name);
                           return (
                             <button

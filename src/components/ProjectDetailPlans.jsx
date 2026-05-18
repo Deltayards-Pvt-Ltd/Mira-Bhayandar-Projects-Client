@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import { AppContext } from "../context/AppContext";
 
 function DownloadIcon({ className }) {
   return (
@@ -28,13 +30,38 @@ function formatAreaSqft(area) {
   return `${n.toLocaleString("en-IN")} sq ft`;
 }
 
+function planDownloadFilename(title, imagePath) {
+  const ext =
+    String(imagePath).match(/\.(jpe?g|png|webp|gif|avif)$/i)?.[1]?.toLowerCase() || "jpg";
+  const safe =
+    String(title)
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .slice(0, 80) || "floor-plan";
+  return `${safe}.${ext}`;
+}
+
 /**
  * @param {{
  *   project: Record<string, unknown>;
  *   assetUrl: (path: string) => string;
  * }} props
  */
+function saveBlobAsFile(blob, filename) {
+  const objectUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = objectUrl;
+  link.download = filename;
+  link.rel = "noopener";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(objectUrl);
+}
+
 export default function ProjectDetailPlans({ project, assetUrl }) {
+  const backendUrl = useContext(AppContext)?.backendUrl ?? "";
   const layouts = useMemo(() => {
     const raw = project?.layouts;
     if (!Array.isArray(raw)) return [];
@@ -42,6 +69,7 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
   }, [project?.layouts]);
 
   const [idx, setIdx] = useState(0);
+  const [downloading, setDownloading] = useState(false);
   const brochure = String(project?.browcherPdf || "").trim();
   const brochureHref = brochure ? assetUrl(brochure) : "";
 
@@ -49,12 +77,50 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
     setIdx((i) => (layouts.length ? Math.min(i, layouts.length - 1) : 0));
   }, [layouts.length]);
 
-  if (layouts.length === 0) return null;
+  const active = layouts.length ? layouts[idx] ?? layouts[0] : null;
+  const title = active
+    ? String(active?.title || "Plan").trim() || "Plan"
+    : "";
+  const areaLine = active ? formatAreaSqft(active?.area) : "";
+  const imgSrc = active ? assetUrl(String(active.image)) : "";
+  const imagePath = active ? String(active?.image || "") : "";
 
-  const active = layouts[idx] ?? layouts[0];
-  const title = String(active?.title || "Plan").trim() || "Plan";
-  const areaLine = formatAreaSqft(active?.area);
-  const imgSrc = assetUrl(String(active.image));
+  const downloadPlanImage = useCallback(async () => {
+    if (!imgSrc || downloading) return;
+    const filename = planDownloadFilename(title, imagePath);
+    const assetParam = /^https?:\/\//i.test(imagePath)
+      ? imagePath
+      : imagePath.replace(/^\/+/, "");
+
+    setDownloading(true);
+    try {
+      const res = await fetch(imgSrc, { mode: "cors" });
+      if (!res.ok) throw new Error(`fetch failed (${res.status})`);
+      saveBlobAsFile(await res.blob(), filename);
+    } catch {
+      if (!backendUrl) {
+        console.error("Floor plan download failed: backend URL not configured");
+        return;
+      }
+      try {
+        const { data } = await axios.get(`${backendUrl}/api/project/download-asset`, {
+          params: { url: assetParam, filename },
+          responseType: "blob",
+        });
+        if (data?.type?.includes("application/json")) {
+          const err = JSON.parse(await data.text());
+          throw new Error(err?.message || "Download failed");
+        }
+        saveBlobAsFile(data, filename);
+      } catch (err) {
+        console.error("Floor plan download failed:", err?.message || err);
+      }
+    } finally {
+      setDownloading(false);
+    }
+  }, [backendUrl, downloading, imagePath, imgSrc, title]);
+
+  if (layouts.length === 0) return null;
 
   const navOffset = "calc(5.5rem + env(safe-area-inset-top, 0px))";
   const planViewportMax =
@@ -130,9 +196,6 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
               </p>
             </div>
             <div className="sm:text-right">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold">
-                Super built-up area
-              </p>
               <p className="mt-0.5 text-lg font-medium tabular-nums tracking-tight text-white/95 sm:text-xl">
                 {areaLine || "—"}
               </p>
@@ -150,7 +213,7 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
           className="mt-4 overflow-hidden rounded-2xl border border-white/15 bg-white/[0.04] p-1 shadow-[0_24px_80px_-28px_rgba(0,0,0,0.55)] ring-1 ring-white/10 backdrop-blur-sm sm:mt-5 sm:p-1.5"
         >
           <div
-            className="flex items-center justify-center overflow-auto rounded-[14px] bg-white p-2 sm:p-4"
+            className="relative flex items-center justify-center overflow-auto rounded-[14px] bg-white p-2 sm:p-4"
             style={{ maxHeight: planViewportMax }}
           >
             <img
@@ -162,6 +225,16 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
               loading="lazy"
               decoding="async"
             />
+            <button
+              type="button"
+              onClick={downloadPlanImage}
+              disabled={downloading || !imgSrc}
+              aria-label="Download floor plan image"
+              className="absolute bottom-3 left-3 z-10 inline-flex items-center gap-2 rounded-full border border-navy/15 bg-white/95 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-navy shadow-[0_8px_24px_-8px_rgba(0,0,0,0.35)] backdrop-blur-sm transition-[background-color,box-shadow] hover:bg-white hover:shadow-[0_10px_28px_-8px_rgba(0,0,0,0.4)] disabled:cursor-wait disabled:opacity-70 sm:bottom-4 sm:left-4 sm:px-3.5 sm:py-2.5 sm:text-[11px]"
+            >
+              <DownloadIcon className="shrink-0 text-navy" />
+              {downloading ? "Saving…" : "Download"}
+            </button>
           </div>
         </div>
 
