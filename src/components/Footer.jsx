@@ -52,9 +52,21 @@ function IconLinkedIn({ className }) {
 }
 
 const SOCIALS = [
-  { label: "Facebook", href: "https://facebook.com", Icon: IconFacebook },
-  { label: "Instagram", href: "https://instagram.com", Icon: IconInstagram },
-  { label: "YouTube", href: "https://youtube.com", Icon: IconYouTube },
+  {
+    label: "Facebook",
+    href: "https://www.facebook.com/profile.php?id=61564796387780",
+    Icon: IconFacebook,
+  },
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/mira_bhayandar_projects",
+    Icon: IconInstagram,
+  },
+  {
+    label: "YouTube",
+    href: "https://www.youtube.com/@mirabhayandarprojectshub",
+    Icon: IconYouTube,
+  },
   { label: "LinkedIn", href: "https://linkedin.com", Icon: IconLinkedIn },
 ];
 

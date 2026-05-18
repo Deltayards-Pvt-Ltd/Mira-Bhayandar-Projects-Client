@@ -1,5 +1,6 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { buildProjectFilterOptions } from "../utils/projectsFilters.js";
 
 export const AppContext = createContext(null);
 
@@ -13,18 +14,31 @@ export default function AppContextProvider({ children }) {
     whatsapp: "919876543210",
   });
   const [loading, setLoading] = useState(true);
+  const [projectFilters, setProjectFilters] = useState({
+    localities: [],
+    configurations: [],
+  });
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+  const syncProjectFilters = useCallback((projects) => {
+    setProjectFilters(buildProjectFilterOptions(projects));
+  }, []);
 
   const getAllProjects = useCallback(async () => {
     try {
       const { data } = await axios.get(`${backendUrl}/api/project/allProjects`);
-      if (data?.success) setAllProjects(data.allProjects ?? []);
-      else console.warn("getAllProjects:", data?.message);
+      if (data?.success) {
+        const projects = data.allProjects ?? [];
+        setAllProjects(projects);
+        syncProjectFilters(projects);
+      } else {
+        console.warn("getAllProjects:", data?.message);
+      }
     } catch (err) {
       console.error("getAllProjects failed:", err?.message || err);
     }
-  }, [backendUrl]);
+  }, [backendUrl, syncProjectFilters]);
 
   const getTestimonials = useCallback(async () => {
     try {
@@ -77,6 +91,10 @@ export default function AppContextProvider({ children }) {
     }
   }, [backendUrl]);
 
+  const refetchProjectFilters = useCallback(() => {
+    syncProjectFilters(allProjects);
+  }, [allProjects, syncProjectFilters]);
+
   useEffect(() => {
     if (!backendUrl) {
       setTestimonials([]);
@@ -124,10 +142,12 @@ export default function AppContextProvider({ children }) {
       testimonials,
       blogs,
       contactSettings,
+      projectFilters,
       loading,
       backendUrl,
       assetUrl,
       refetchProjects: getAllProjects,
+      refetchProjectFilters,
       refetchTestimonials: getTestimonials,
       refetchBlogs: getBlogs,
       refetchContactSettings: getContactSettings,
@@ -137,10 +157,12 @@ export default function AppContextProvider({ children }) {
       testimonials,
       blogs,
       contactSettings,
+      projectFilters,
       loading,
       backendUrl,
       assetUrl,
       getAllProjects,
+      refetchProjectFilters,
       getTestimonials,
       getBlogs,
       getContactSettings,

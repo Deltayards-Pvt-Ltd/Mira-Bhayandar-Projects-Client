@@ -148,7 +148,7 @@ export default function ProjectDetailIntro({ project, assetUrl }) {
 
             {builder ? (
               <p className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-white/55">
-                {builder}
+               <span className="text-gold">By -</span> {builder}
               </p>
             ) : null}
 

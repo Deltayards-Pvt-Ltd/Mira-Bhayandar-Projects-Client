@@ -1,4 +1,4 @@
-import { useContext, useLayoutEffect, useMemo, useState } from "react";
+import { useContext, useLayoutEffect, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
 import ProjectCard from "./ProjectCard";
@@ -24,6 +24,17 @@ function ArrowRightIcon() {
 
 const FEATURED_COUNT = 3;
 
+function pickRandomProjects(projects, count) {
+  const pool = projects.filter((p) => p?.coverVideo || p?.coverImage);
+  if (pool.length <= count) return pool;
+  const shuffled = [...pool];
+  for (let i = shuffled.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, count);
+}
+
 export default function FeaturedProjects() {
   const ctx = useContext(AppContext);
   const allProjects = ctx?.allProjects ?? [];
@@ -31,13 +42,14 @@ export default function FeaturedProjects() {
   const assetUrl = ctx?.assetUrl ?? ((p) => p ?? "");
   /** Same pattern as ArchitecturalVision: observe the whole section, default IO options. */
   const [sectionRef, visible] = useReveal();
+  const [featured, setFeatured] = useState([]);
+  const hasPickedRef = useRef(false);
 
-  const featured = useMemo(() => {
-    const withMedia = (allProjects || []).filter(
-      (p) => p?.coverVideo || p?.coverImage,
-    );
-    return withMedia.slice(0, FEATURED_COUNT);
-  }, [allProjects]);
+  useEffect(() => {
+    if (loading || hasPickedRef.current) return;
+    hasPickedRef.current = true;
+    setFeatured(pickRandomProjects(allProjects, FEATURED_COUNT));
+  }, [loading, allProjects]);
 
   const showGrid = !loading && featured.length > 0;
 
