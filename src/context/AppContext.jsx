@@ -1,5 +1,6 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { buildProjectFilterOptions } from "../utils/projectsFilters.js";
 
 export const AppContext = createContext(null);
 
@@ -20,15 +21,24 @@ export default function AppContextProvider({ children }) {
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
+  const syncProjectFilters = useCallback((projects) => {
+    setProjectFilters(buildProjectFilterOptions(projects));
+  }, []);
+
   const getAllProjects = useCallback(async () => {
     try {
       const { data } = await axios.get(`${backendUrl}/api/project/allProjects`);
-      if (data?.success) setAllProjects(data.allProjects ?? []);
-      else console.warn("getAllProjects:", data?.message);
+      if (data?.success) {
+        const projects = data.allProjects ?? [];
+        setAllProjects(projects);
+        syncProjectFilters(projects);
+      } else {
+        console.warn("getAllProjects:", data?.message);
+      }
     } catch (err) {
       console.error("getAllProjects failed:", err?.message || err);
     }
-  }, [backendUrl]);
+  }, [backendUrl, syncProjectFilters]);
 
   const getTestimonials = useCallback(async () => {
     try {
@@ -81,23 +91,9 @@ export default function AppContextProvider({ children }) {
     }
   }, [backendUrl]);
 
-  const getProjectFilters = useCallback(async () => {
-    try {
-      const { data } = await axios.get(`${backendUrl}/api/project/filters`);
-      if (data?.success && data.filters) {
-        setProjectFilters({
-          localities: data.filters.localities ?? [],
-          configurations: data.filters.configurations ?? [],
-        });
-      } else {
-        console.warn("getProjectFilters:", data?.message);
-        setProjectFilters({ localities: [], configurations: [] });
-      }
-    } catch (err) {
-      console.error("getProjectFilters failed:", err?.message || err);
-      setProjectFilters({ localities: [], configurations: [] });
-    }
-  }, [backendUrl]);
+  const refetchProjectFilters = useCallback(() => {
+    syncProjectFilters(allProjects);
+  }, [allProjects, syncProjectFilters]);
 
   useEffect(() => {
     if (!backendUrl) {
@@ -116,7 +112,6 @@ export default function AppContextProvider({ children }) {
       try {
         await Promise.all([
           getAllProjects(),
-          getProjectFilters(),
           getTestimonials(),
           getBlogs(),
           getContactSettings(),
@@ -128,7 +123,7 @@ export default function AppContextProvider({ children }) {
     return () => {
       cancelled = true;
     };
-  }, [backendUrl, getAllProjects, getProjectFilters, getTestimonials, getBlogs, getContactSettings]);
+  }, [backendUrl, getAllProjects, getTestimonials, getBlogs, getContactSettings]);
 
   /** Build a full URL for an asset path stored in the DB (e.g. "uploads/projects/xyz.mp4"). */
   const assetUrl = useCallback(
@@ -152,7 +147,7 @@ export default function AppContextProvider({ children }) {
       backendUrl,
       assetUrl,
       refetchProjects: getAllProjects,
-      refetchProjectFilters: getProjectFilters,
+      refetchProjectFilters,
       refetchTestimonials: getTestimonials,
       refetchBlogs: getBlogs,
       refetchContactSettings: getContactSettings,
@@ -167,7 +162,7 @@ export default function AppContextProvider({ children }) {
       backendUrl,
       assetUrl,
       getAllProjects,
-      getProjectFilters,
+      refetchProjectFilters,
       getTestimonials,
       getBlogs,
       getContactSettings,

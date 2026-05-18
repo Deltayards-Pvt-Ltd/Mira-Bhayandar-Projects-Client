@@ -28,7 +28,7 @@ export function idToLabelMap(options) {
  * @param {string} title
  * @returns {Set<number>}
  */
-function bhkCountsInTitle(title) {
+export function bhkCountsInTitle(title) {
   const s = norm(title);
   const out = new Set();
   const add = (n) => {
@@ -50,6 +50,81 @@ function bhkCountsInTitle(title) {
   }
 
   return out;
+}
+
+/** @param {number} n */
+export function bhkConfigId(n) {
+  return `${String(n)}-bhk`;
+}
+
+/** @param {string} configId */
+export function bhkConfigLabel(configId) {
+  const m = String(configId).match(/^(\d+(?:\.\d+)?)-bhk$/i);
+  return m ? `${m[1]} BHK` : null;
+}
+
+/** @param {string} title */
+export function configIdsFromLayoutTitle(title) {
+  const ids = new Set();
+  const s = norm(title);
+  if (s.includes("jodi")) ids.add("jodi");
+  for (const n of bhkCountsInTitle(title)) {
+    ids.add(bhkConfigId(n));
+  }
+  return [...ids];
+}
+
+/** @param {string} configId */
+export function configIdToLabel(configId) {
+  if (configId === "jodi") return "Jodi";
+  return bhkConfigLabel(configId) || configId;
+}
+
+/** @param {string} a @param {string} b */
+function compareConfigIds(a, b) {
+  if (a === "jodi" && b === "jodi") return 0;
+  if (a === "jodi") return 1;
+  if (b === "jodi") return -1;
+  const na = Number(a.replace(/-bhk$/i, ""));
+  const nb = Number(b.replace(/-bhk$/i, ""));
+  if (Number.isFinite(na) && Number.isFinite(nb)) return na - nb;
+  return a.localeCompare(b);
+}
+
+/**
+ * @param {Array<{ location?: string; layouts?: Array<{ title?: string }> }>} projects
+ * @returns {{ localities: FilterOption[]; configurations: FilterOption[] }}
+ */
+export function buildProjectFilterOptions(projects) {
+  /** @type {Map<string, string>} */
+  const localityMap = new Map();
+  /** @type {Set<string>} */
+  const configIds = new Set();
+
+  for (const project of projects || []) {
+    const loc = String(project?.location || "").trim();
+    if (loc) {
+      const id = slugFromLabel(loc);
+      if (id && !localityMap.has(id)) localityMap.set(id, loc);
+    }
+    for (const layout of project?.layouts || []) {
+      const title = layout?.title;
+      if (!title) continue;
+      for (const cid of configIdsFromLayoutTitle(title)) {
+        configIds.add(cid);
+      }
+    }
+  }
+
+  const localities = [...localityMap.entries()]
+    .map(([id, label]) => ({ id, label }))
+    .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
+
+  const configurations = [...configIds]
+    .sort(compareConfigIds)
+    .map((id) => ({ id, label: configIdToLabel(id) }));
+
+  return { localities, configurations };
 }
 
 /**
