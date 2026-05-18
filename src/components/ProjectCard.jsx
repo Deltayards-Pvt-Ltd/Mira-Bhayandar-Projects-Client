@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function layoutAreaNum(layout) {
   const a = layout?.area;
@@ -104,7 +105,7 @@ export default function ProjectCard({ project, assetUrl }) {
   const [videoFailed, setVideoFailed] = useState(false);
   const [hovered, setHovered] = useState(false);
   const videoRef = useRef(null);
-
+  const navigate = useNavigate();
   const coverVideo = project?.coverVideo;
   const coverImage = project?.coverImage;
   const showVideo = Boolean(coverVideo) && !videoFailed;
@@ -142,10 +143,11 @@ export default function ProjectCard({ project, assetUrl }) {
   const possessionLine = formatPossession(project?.reraPossession);
 
   return (
-    <article
-      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-navy/12 bg-white shadow-[0_2px_6px_rgba(10,22,40,0.09),0_14px_44px_-4px_rgba(10,22,40,0.18)] transition-[border-color,box-shadow] duration-300 hover:border-gold/55 hover:shadow-[0_4px_10px_rgba(10,22,40,0.1),0_24px_56px_-6px_rgba(10,22,40,0.22)]"
+    <article 
+      className="group cursor-pointer flex h-full flex-col overflow-hidden rounded-2xl border border-navy/12 bg-white shadow-[0_2px_6px_rgba(10,22,40,0.09),0_14px_44px_-4px_rgba(10,22,40,0.18)] transition-[border-color,box-shadow] duration-300 hover:border-gold/55 hover:shadow-[0_4px_10px_rgba(10,22,40,0.1),0_24px_56px_-6px_rgba(10,22,40,0.22)]"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClick={() => navigate(`/projects/${id}`)}
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-navy/5">
         {showVideo ? (
@@ -212,7 +214,7 @@ export default function ProjectCard({ project, assetUrl }) {
             {name}
           </h3>
           {builder ? (
-            <p className="max-w-[42%] shrink-0 text-right text-[11px] font-semibold uppercase leading-snug tracking-[0.14em] text-navy/72 sm:text-xs">
+            <p className="max-w-[42%] shrink-0 text-right text-[11px] font-semibold uppercase leading-snug tracking-[0.14em] text-gold-ink/90 sm:text-xs">
               By {builder}
             </p>
           ) : null}

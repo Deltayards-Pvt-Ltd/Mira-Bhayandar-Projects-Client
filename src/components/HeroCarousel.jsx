@@ -188,9 +188,10 @@ export default function HeroCarousel() {
         <div className="flex min-h-0 flex-col gap-8 sm:gap-10">
           <div className="max-w-4xl text-left">
             <h1 className="font-hero-title text-white">
-              <span className="block">Property Buying In</span>
+              <span className="block">The Ultimate Buffet </span>
+              <span className="block">Of Properties In</span>
               <span className="font-hero-accent block text-gold">Mira Bhayandar</span>
-              <span className="block">Just Got Simpler</span>
+
             </h1>
             <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-white/65 sm:mt-6 sm:text-base md:mt-7">
               We&apos;re not here to overwhelm you with hundreds of irrelevant

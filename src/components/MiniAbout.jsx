@@ -205,15 +205,15 @@ export default function MiniAbout() {
           style={{ "--featured-fade-delay": "0ms" }}
         >
           <p className="mb-3 font-sans text-sm font-semibold uppercase tracking-[0.2em] text-gold-ink">
-            Why MiraBhayandar
+            Why Mira Bhayandar Property?
           </p>
           <h2
             id="mini-about-heading"
-            className="text-5xl tracking-tight text-navy md:text-6xl lg:text-7xl"
+            className="text-4xl tracking-tight text-navy md:text-5xl lg:text-6xl"
             style={{ fontFamily: "var(--font-heading)" }}
           >
-            Your Trusted Partner
-          </h2>
+           For The Things We Do Better!
+          </h2> 
         </header>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">

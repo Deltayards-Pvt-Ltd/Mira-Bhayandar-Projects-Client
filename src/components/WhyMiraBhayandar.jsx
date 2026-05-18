@@ -88,10 +88,10 @@ export default function WhyMiraBhayandar() {
             className="mb-4 text-4xl tracking-tight md:text-5xl lg:text-6xl"
             style={{ fontFamily: "var(--font-heading)" }}
           >
-            Why Mira-Bhayandar?
+            Why Mira-Bhayandar, You Ask?
           </h2>
           <p className="mx-auto max-w-2xl font-sans text-base leading-relaxed text-white/55 md:text-lg">
-            Everything you need, minutes away
+            Why not, we ask you back ?
           </p>
         </header>
 
