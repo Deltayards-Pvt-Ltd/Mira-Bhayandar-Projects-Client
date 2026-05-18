@@ -8,6 +8,8 @@ export function excerptFromContent(html, max = 130) {
   return `${plain.slice(0, max).trim()}…`;
 }
 
+import { Link } from "react-router-dom";
+
 export function formatBlogDate(blog) {
   const raw = blog?.date ?? blog?.createdAt;
   if (!raw) return "";
@@ -49,9 +51,12 @@ export default function BlogCard({ blog, assetUrl }) {
   const imgSrc = blog?.image ? assetUrl(String(blog.image)) : "";
   const badge = String(blog?.tagline ?? "").trim() || "Update";
   const dateStr = formatBlogDate(blog);
+  const id = blog?._id != null ? String(blog._id) : "";
+  const href = id ? `/blogs/${id}` : "/blogs";
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-navy/[0.06] bg-white shadow-[0_8px_32px_-14px_rgba(10,22,40,0.12)] transition-shadow duration-300 hover:shadow-[0_16px_40px_-12px_rgba(10,22,40,0.16)]">
+      <Link to={href} className="flex flex-1 flex-col focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
       <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-navy/5">
         {imgSrc ? (
           <img
@@ -96,7 +101,12 @@ export default function BlogCard({ blog, assetUrl }) {
             By {blog.writer}
           </p>
         ) : null}
+
+        <p className="mt-4 font-sans text-xs font-semibold uppercase tracking-[0.14em] text-gold-ink transition-colors group-hover:text-gold-dark">
+          Read article →
+        </p>
       </div>
+      </Link>
     </article>
   );
 }

@@ -11,6 +11,7 @@ import Testimonials from "../components/Testimonials";
 import LatestUpdates from "../components/LatestUpdates";
 import DreamHomeCta from "../components/DreamHomeCta";
 import ContactSection from "../components/ContactSection";
+import BackToTop from "../components/BackToTop";
 
 export default function Home() {
   const { backendUrl } = useContext(AppContext) ?? {};
@@ -28,6 +29,7 @@ export default function Home() {
       <LatestUpdates />
       <ContactSection />
       <DreamHomeCta />
+      <BackToTop />
 
       {!backendUrl && (
         <div className="break-words bg-amber-500/10 px-3 py-3 text-center text-xs text-amber-200 sm:px-4 sm:text-sm">

@@ -130,13 +130,6 @@ export default function ProjectDetailEnquiry({ project }) {
           style={{ fontFamily: "var(--font-heading)" }}
         >
           Enquire about {projectName}
-          <span
-            className="italic text-gold-dark"
-            style={{ fontFamily: "var(--font-editorial)" }}
-            aria-hidden
-          >
-            .
-          </span>
         </h2>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-navy/65 sm:text-base">
           Share your details and we&apos;ll connect you with the sales team for this project.

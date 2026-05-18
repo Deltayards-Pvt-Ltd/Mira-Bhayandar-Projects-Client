@@ -12,7 +12,38 @@
 
   --font-heading: "Fraunces", Georgia, "Times New Roman", serif;
   --font-editorial: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-hero: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-hero-accent: "Cormorant Garamond", Georgia, "Times New Roman", serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+.font-hero-title {
+  font-family: var(--font-hero);
+  font-weight: 500;
+  font-size: clamp(2.125rem, 9vw, 2.75rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.font-hero-accent {
+  font-family: var(--font-hero-accent);
+  font-weight: 600;
+  font-style: italic;
+}
+
+@media (min-width: 640px) {
+  .font-hero-title {
+    font-size: clamp(2.75rem, 6vw, 4.25rem);
+    line-height: 0.98;
+  }
+}
+
+@media (min-width: 1024px) {
+  .font-hero-title {
+    font-size: clamp(3.25rem, 4.8vw, 5.75rem);
+    line-height: 0.98;
+    letter-spacing: -0.025em;
+  }
 }
 
 html {

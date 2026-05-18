@@ -55,6 +55,7 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
   const title = String(active?.title || "Plan").trim() || "Plan";
   const areaLine = formatAreaSqft(active?.area);
   const imgSrc = assetUrl(String(active.image));
+
   const navOffset = "calc(5.5rem + env(safe-area-inset-top, 0px))";
   const planViewportMax =
     "min(calc(100dvh - 5.5rem - env(safe-area-inset-top, 0px) - 11.5rem), 28rem)";
@@ -83,13 +84,6 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
             style={{ fontFamily: "var(--font-heading)" }}
           >
             Plans
-            <span
-              className="italic text-gold-light"
-              style={{ fontFamily: "var(--font-editorial)" }}
-              aria-hidden
-            >
-              .
-            </span>
           </h2>
         </header>
 

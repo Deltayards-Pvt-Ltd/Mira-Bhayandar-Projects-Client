@@ -171,37 +171,19 @@ export default function HeroCarousel() {
         />
       </div>
 
-      <div className="relative z-10 mx-auto flex min-h-[100dvh] max-w-7xl flex-col justify-end gap-8 px-4 pt-[calc(5.5rem+env(safe-area-inset-top,0px))] pb-8 sm:gap-10 sm:px-6 sm:pb-10 sm:pt-28 md:pt-36 md:pb-14 lg:px-8">
+      <div className="relative z-10 mx-auto flex min-h-[100dvh] max-w-7xl flex-col justify-end gap-8 px-4 pt-[calc(5rem+env(safe-area-inset-top,0px))] pb-[max(2rem,env(safe-area-inset-bottom,0px))] sm:gap-10 sm:px-6 sm:pb-10 sm:pt-28 md:pb-14 md:pt-32 lg:px-8">
         <div className="flex min-h-0 flex-col gap-8 sm:gap-10">
-          <div className="max-w-3xl text-left">
-            <h1
-              className="leading-[0.86] tracking-[-0.04em] text-white"
-              style={{
-                fontFamily: "var(--font-heading)",
-                fontWeight: 400,
-                fontSize: "clamp(36px, 11vw, 132px)",
-                fontOpticalSizing: "auto",
-              }}
-            >
-              Place,
-              <span
-                className="italic text-gold"
-                style={{ fontFamily: "var(--font-editorial)" }}
-              >
-                {" "}
-                not
-              </span>
-              <br />
-              product.
-              <br />
-              <span className="text-cream/55">Curated,</span>
-              <br />
-              <span className="text-cream/55">never listed.</span>
+          <div className="max-w-4xl text-left">
+            <h1 className="font-hero-title text-white">
+              <span className="block">Property Buying In</span>
+              <span className="font-hero-accent block text-gold">Mira Bhayandar</span>
+              <span className="block">Just Got Simpler</span>
             </h1>
-            <p className="mt-5 max-w-lg text-sm leading-relaxed text-white/55 sm:mt-7 md:text-base">
-              The handpicked residences of Mira-Bhayandar — every project verified,
-              every developer vetted. We connect families directly to the sales
-              team. No noise.
+            <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-white/65 sm:mt-6 sm:text-base md:mt-7">
+              We&apos;re not here to overwhelm you with hundreds of irrelevant
+              listings. We focus on showcasing projects that genuinely matter to
+              Mira Bhayandar buyers, helping you save time, compare better, and make
+              smarter property decisions.
             </p>
           </div>
 

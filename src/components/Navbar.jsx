@@ -94,7 +94,7 @@ export function Navbar() {
           }`}
         >
           <div className="relative mx-auto max-w-7xl px-4 pt-3 pb-3 sm:px-6 sm:pt-4 sm:pb-4 lg:px-8">
-            <div className="flex min-h-12 w-full items-center gap-3 sm:min-h-14 sm:gap-6">
+            <div className="flex min-h-16 w-full items-center gap-3 sm:min-h-16 sm:gap-6">
               <Link
                 to="/"
                 className="flex min-w-0 shrink items-center gap-2 sm:gap-3"
@@ -104,7 +104,7 @@ export function Navbar() {
                 <img
                   src="/logo.png"
                   alt="MiraBhayandar"
-                  className="h-8 w-auto sm:h-9 md:h-10"
+                  className="h-12 w-auto sm:h-12 md:h-12 lg:h-14"
                   draggable={false}
                 />
               </Link>
