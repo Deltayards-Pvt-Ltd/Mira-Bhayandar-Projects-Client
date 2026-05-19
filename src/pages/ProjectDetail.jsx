@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import { AppContext } from "../context/AppContext";
 import ProjectDetailIntro from "../components/ProjectDetailIntro";
+import ProjectDetailQuickFacts from "../components/ProjectDetailQuickFacts";
 import ProjectDetailAbout from "../components/ProjectDetailAbout";
 import ProjectDetailPlans from "../components/ProjectDetailPlans";
 import ProjectDetailGallery from "../components/ProjectDetailGallery";
@@ -92,6 +93,7 @@ export default function ProjectDetail() {
   return (
     <>
       <ProjectDetailIntro project={project} assetUrl={assetUrl} />
+      <ProjectDetailQuickFacts project={project} />
       <ProjectDetailAbout project={project} />
       <ProjectDetailGallery project={project} assetUrl={assetUrl} />
       <ProjectDetailPlans project={project} assetUrl={assetUrl} />
