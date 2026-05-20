@@ -117,7 +117,7 @@ export default function ProjectDetailEnquiry({ project }) {
 
   return (
     <section
-      className="border-b border-navy/[0.08] bg-[#fdf8f1] py-16 text-navy md:py-24"
+      className="border-b border-navy/[0.08] bg-[#fdf8f1] py-16 text-navy md:py-16"
       aria-labelledby="project-enquiry-heading"
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">

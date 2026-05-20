@@ -8,6 +8,7 @@ import ProjectDetailAbout from "../components/ProjectDetailAbout";
 import ProjectDetailPlans from "../components/ProjectDetailPlans";
 import ProjectDetailGallery from "../components/ProjectDetailGallery";
 import ProjectDetailEnquiry from "../components/ProjectDetailEnquiry";
+import ProjectMahaReraDetails from "../components/projectMahaReraDetails";
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -97,6 +98,7 @@ export default function ProjectDetail() {
       <ProjectDetailAbout project={project} />
       <ProjectDetailGallery project={project} assetUrl={assetUrl} />
       <ProjectDetailPlans project={project} assetUrl={assetUrl} />
+      <ProjectMahaReraDetails project={project} assetUrl={assetUrl} />
       <ProjectDetailEnquiry project={project} />
     </>
   );
