@@ -45,7 +45,7 @@ export default function LatestUpdates() {
             className="mb-4 text-4xl tracking-tight text-navy md:text-5xl lg:text-6xl"
             style={{ fontFamily: "var(--font-heading)" }}
           >
-            Whats Up?
+            What's Up?
           </h2>
           <p className="mx-auto max-w-2xl font-sans text-base leading-relaxed text-navy/70 md:text-lg">
             Market insights, infrastructure news, and regulatory updates for smart

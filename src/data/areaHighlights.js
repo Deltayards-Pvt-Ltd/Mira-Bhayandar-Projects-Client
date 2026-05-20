@@ -1,7 +1,7 @@
 /** Area guide cards — copy aligned with mirabhayandar reference content. */
 export const areaHighlights = [
   {
-    title: "Railway Connectivity",
+    title: "Metro & Railway Connectivity",
     description:
       "Bhayandar & Mira Road stations on Western Railway — 45 min to Churchgate, direct trains to Dadar & Andheri.",
     icon: "Train",

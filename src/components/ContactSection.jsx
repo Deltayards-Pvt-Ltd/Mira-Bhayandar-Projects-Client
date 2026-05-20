@@ -77,7 +77,7 @@ export default function ContactSection() {
               className="mb-6 text-4xl leading-[1.1] tracking-tight md:text-5xl lg:text-[3.25rem]"
               style={{ fontFamily: "var(--font-heading)" }}
             >
-              <span className="text-navy">Cant't wait to hear  </span>
+              <span className="text-navy">Can't wait to hear </span>
               <span className="text-gold">from you!</span>
             </h2>
             <p className="mb-10 max-w-lg font-sans text-base leading-relaxed text-navy/65 md:text-lg">

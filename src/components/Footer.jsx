@@ -1,9 +1,6 @@
 import { Link } from "react-router-dom";
 import { useScrollToSiteContact } from "../hooks/useScrollToSiteContact";
 
-const TAGLINE =
-  "We have been the trusted bridge between families and their dream homes in Mira-Bhayandar.";
-
 const DISCLAIMER =
   "Disclaimer: This website is for informational purposes only. All images are artistic impressions. Prices mentioned are subject to change. RERA registration details available for each project. Please verify all details independently before making purchase decisions.";
 
@@ -96,8 +93,22 @@ export function Footer() {
                 draggable={false}
               />
             </Link>
-            <p className="mt-7 font-sans text-base leading-[1.7] text-white/75 sm:text-lg sm:leading-[1.65] md:text-[1.125rem] md:leading-relaxed">
-              {TAGLINE}
+            <p className="mt-3 font-sans text-base leading-[1.7] text-white/75 sm:text-lg sm:leading-[1.65] md:text-[1.125rem] md:leading-relaxed ">
+              And That's Mira Bhayandar Property For You.
+              <br />
+              Designed for the new generation of homebuyers, where every project is curated, every
+              detail matters, and every click brings you closer to your future home.
+              <br />
+              Browse projects the way you shop online:
+              <br />
+              <span className="font-bold text-gold">Compare</span>.{" "}
+              <span className="font-bold text-gold">Shortlist</span>.{" "}
+              <span className="font-bold text-gold">Explore</span>.{" "}
+              <span className="font-bold text-gold">Connect</span>.
+              
+              <br />
+              Because we've been the trusted bridge between families and their dream homes in
+              Mira Bhayandar for a reason, and that trust is something we never take for granted.
             </p>
             <ul className="mt-9 flex flex-wrap gap-3.5" aria-label="Social media">
               {SOCIALS.map(({ label, href, Icon }) => (
