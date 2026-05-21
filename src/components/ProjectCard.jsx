@@ -173,7 +173,7 @@ export default function ProjectCard({ project, assetUrl }) {
 
   return (
     <article
-      className="group cursor-pointer flex h-full flex-col overflow-hidden rounded-2xl border border-navy/12 bg-white shadow-[0_2px_6px_rgba(10,22,40,0.09),0_14px_44px_-4px_rgba(10,22,40,0.18)] transition-[border-color,box-shadow] duration-300 hover:border-gold/55 hover:shadow-[0_4px_10px_rgba(10,22,40,0.1),0_24px_56px_-6px_rgba(10,22,40,0.22)]"
+      className="group cursor-pointer flex h-full flex-col overflow-hidden rounded-2xl border border-navy/12 bg-white text-navy shadow-[0_2px_6px_rgba(10,22,40,0.09),0_14px_44px_-4px_rgba(10,22,40,0.18)] transition-[border-color,box-shadow] duration-300 hover:border-gold/55 hover:shadow-[0_4px_10px_rgba(10,22,40,0.1),0_24px_56px_-6px_rgba(10,22,40,0.22)]"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={() => navigate(`/projects/${id}`)}
@@ -282,22 +282,9 @@ export default function ProjectCard({ project, assetUrl }) {
               </div>
             ) : (
               <div className="inline-flex shrink-0 items-center gap-1.5">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 2l1.8 1.3 2.2-.3 1.3 1.8 2.1.8v2.2l1.6 1.6-.8 2.1.8 2.1-1.6 1.6v2.2l-2.1.8-1.3 1.8-2.2-.3L12 22l-1.8-1.3-2.2.3-1.3-1.8-2.1-.8v-2.2L3 13.6l.8-2.1L3 9.4l1.6-1.6V5.6l2.1-.8 1.3-1.8 2.2.3L12 2z" />
-                  <circle cx="12" cy="11" r="4" />
-                  <path d="m10.8 11 1 1 2-2" />
-                  <path d="M8 21l2-5" />
-                  <path d="M16 21l-2-5" />
-                </svg>
+                <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/12 text-gold-ink">
+                  <CertificateIcon className="h-4 w-4" />
+                </span>
                 <span className="whitespace-nowrap text-sm font-semibold uppercase tracking-[0.06em] text-navy/80">
                   RERA Certified
                 </span>

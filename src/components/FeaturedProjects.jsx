@@ -97,7 +97,7 @@ export default function FeaturedProjects() {
   return (
     <section
       ref={sectionRef}
-      className="bg-[#fdfbf7] py-16 md:py-24"
+      className="bg-[#fdfbf7] py-16 text-navy md:py-24"
       aria-labelledby="featured-projects-heading"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
