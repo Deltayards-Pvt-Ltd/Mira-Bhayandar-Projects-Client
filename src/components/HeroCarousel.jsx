@@ -186,10 +186,10 @@ export default function HeroCarousel() {
 
       <div className="relative z-10 mx-auto flex min-h-[100dvh] max-w-7xl flex-col justify-end gap-8 px-4 pt-[calc(5rem+env(safe-area-inset-top,0px))] pb-[max(2rem,env(safe-area-inset-bottom,0px))] sm:gap-10 sm:px-6 sm:pb-10 sm:pt-28 md:pb-14 md:pt-32 lg:px-8">
         <div className="flex min-h-0 flex-col gap-8 sm:gap-10">
-          <div className="max-w-4xl text-left">
-            <h1 className="font-hero-title text-white">
-              <span className="block">The Ultimate Buffet </span>
-              <span className="block">Of Properties In</span>
+          <div className="max-w-4xl text-left ">
+            <h1 className="font-hero-title text-white flex flex-col gap-3">
+              <span className="">The Ultimate Buffet </span>
+              <span className="">Of Properties In</span>
               <span className="font-hero-accent block text-gold">Mira Bhayandar</span>
 
             </h1>
