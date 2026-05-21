@@ -1,6 +1,5 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { buildProjectFilterOptions } from "../utils/projectsFilters.js";
 
 export const AppContext = createContext(null);
 
@@ -13,7 +12,10 @@ export default function AppContextProvider({ children }) {
     phone2: "+91 98765 43211",
     whatsapp: "919876543210",
   });
-  const [loading, setLoading] = useState(true);
+  const [appLoading, setAppLoading] = useState(true);
+  const [projectsLoading, setProjectsLoading] = useState(false);
+  const [blogsLoading, setBlogsLoading] = useState(false);
+  const [testimonialsLoading, setTestimonialsLoading] = useState(false);
   const [projectFilters, setProjectFilters] = useState({
     localities: [],
     configurations: [],
@@ -21,26 +23,42 @@ export default function AppContextProvider({ children }) {
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-  const syncProjectFilters = useCallback((projects) => {
-    setProjectFilters(buildProjectFilterOptions(projects));
-  }, []);
+  const getProjectFilters = useCallback(async () => {
+    try {
+      const { data } = await axios.get(`${backendUrl}/api/project/filters`);
+      if (data?.success && data.filters) {
+        setProjectFilters({
+          localities: data.filters.localities ?? [],
+          configurations: data.filters.configurations ?? [],
+        });
+      } else {
+        console.warn("getProjectFilters:", data?.message);
+      }
+    } catch (err) {
+      console.error("getProjectFilters failed:", err?.message || err);
+    }
+  }, [backendUrl]);
 
   const getAllProjects = useCallback(async () => {
+    if (!backendUrl) return;
+    setProjectsLoading(true);
     try {
       const { data } = await axios.get(`${backendUrl}/api/project/allProjects`);
       if (data?.success) {
-        const projects = data.allProjects ?? [];
-        setAllProjects(projects);
-        syncProjectFilters(projects);
+        setAllProjects(data.allProjects ?? []);
       } else {
         console.warn("getAllProjects:", data?.message);
       }
     } catch (err) {
       console.error("getAllProjects failed:", err?.message || err);
+    } finally {
+      setProjectsLoading(false);
     }
-  }, [backendUrl, syncProjectFilters]);
+  }, [backendUrl]);
 
   const getTestimonials = useCallback(async () => {
+    if (!backendUrl) return;
+    setTestimonialsLoading(true);
     try {
       const { data } = await axios.get(`${backendUrl}/api/testimonial/allTestimonials`);
       if (data?.success) setTestimonials(data.allTestimonials ?? []);
@@ -51,10 +69,14 @@ export default function AppContextProvider({ children }) {
     } catch (err) {
       console.error("getTestimonials failed:", err?.message || err);
       setTestimonials([]);
+    } finally {
+      setTestimonialsLoading(false);
     }
   }, [backendUrl]);
 
   const getBlogs = useCallback(async () => {
+    if (!backendUrl) return;
+    setBlogsLoading(true);
     try {
       const { data } = await axios.get(`${backendUrl}/api/blog/allBlogs`);
       if (data?.success) setBlogs(data.allblogs ?? []);
@@ -65,6 +87,8 @@ export default function AppContextProvider({ children }) {
     } catch (err) {
       console.error("getBlogs failed:", err?.message || err);
       setBlogs([]);
+    } finally {
+      setBlogsLoading(false);
     }
   }, [backendUrl]);
 
@@ -91,10 +115,6 @@ export default function AppContextProvider({ children }) {
     }
   }, [backendUrl]);
 
-  const refetchProjectFilters = useCallback(() => {
-    syncProjectFilters(allProjects);
-  }, [allProjects, syncProjectFilters]);
-
   useEffect(() => {
     if (!backendUrl) {
       setTestimonials([]);
@@ -104,28 +124,22 @@ export default function AppContextProvider({ children }) {
         phone2: "+91 98765 43211",
         whatsapp: "919876543210",
       });
-      setLoading(false);
+      setAppLoading(false);
       return;
     }
     let cancelled = false;
     (async () => {
       try {
-        await Promise.all([
-          getAllProjects(),
-          getTestimonials(),
-          getBlogs(),
-          getContactSettings(),
-        ]);
+        await Promise.all([getProjectFilters(), getContactSettings()]);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setAppLoading(false);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [backendUrl, getAllProjects, getTestimonials, getBlogs, getContactSettings]);
+  }, [backendUrl, getProjectFilters, getContactSettings]);
 
-  /** Build a full URL for an asset path stored in the DB (e.g. "uploads/projects/xyz.mp4"). */
   const assetUrl = useCallback(
     (path) => {
       if (!path) return "";
@@ -143,11 +157,16 @@ export default function AppContextProvider({ children }) {
       blogs,
       contactSettings,
       projectFilters,
-      loading,
+      appLoading,
+      projectsLoading,
+      blogsLoading,
+      testimonialsLoading,
+      /** @deprecated use appLoading / projectsLoading / blogsLoading instead */
+      loading: appLoading,
       backendUrl,
       assetUrl,
       refetchProjects: getAllProjects,
-      refetchProjectFilters,
+      refetchProjectFilters: getProjectFilters,
       refetchTestimonials: getTestimonials,
       refetchBlogs: getBlogs,
       refetchContactSettings: getContactSettings,
@@ -158,11 +177,14 @@ export default function AppContextProvider({ children }) {
       blogs,
       contactSettings,
       projectFilters,
-      loading,
+      appLoading,
+      projectsLoading,
+      blogsLoading,
+      testimonialsLoading,
       backendUrl,
       assetUrl,
       getAllProjects,
-      refetchProjectFilters,
+      getProjectFilters,
       getTestimonials,
       getBlogs,
       getContactSettings,

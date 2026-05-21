@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { AppContext } from "../context/AppContext";
 import HeroCarousel from "../components/HeroCarousel";
 import Storytelling from "../components/Storytelling";
@@ -14,7 +14,13 @@ import ContactSection from "../components/ContactSection";
 import BackToTop from "../components/BackToTop";
 
 export default function Home() {
-  const { backendUrl } = useContext(AppContext) ?? {};
+  const { backendUrl, refetchTestimonials, refetchBlogs } = useContext(AppContext) ?? {};
+
+  useEffect(() => {
+    if (!backendUrl) return;
+    refetchTestimonials?.();
+    refetchBlogs?.();
+  }, [backendUrl, refetchTestimonials, refetchBlogs]);
 
   return (
     <>

@@ -1,5 +1,26 @@
 import { Link } from "react-router-dom";
 
+const locations = [
+  {
+    to: "/projects?locality=bhayandar-east",
+    img: "/bhayandar east.png",
+    alt: "Bhayandar East",
+    name: "Bhayandar East",
+  },
+  {
+    to: "/projects?locality=bhayandar-west",
+    img: "/bhayandar west.png",
+    alt: "Bhayandar West",
+    name: "Bhayandar West",
+  },
+  {
+    to: "/projects?locality=mira-road",
+    img: "/mira road east.png",
+    alt: "Mira Road",
+    name: "Mira Road",
+  },
+];
+
 export default function ExploreByLocation() {
   return (
     <section className="bg-[#faf9f6] pt-16 pb-10 md:pt-28 md:pb-12">
@@ -20,65 +41,40 @@ export default function ExploreByLocation() {
         </header>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          <Link
-            to="/projects?locality=bhayandar-east"
-            className="block overflow-hidden rounded-2xl shadow-md"
-          >
-            <div className="relative h-64 md:h-80">
-              <img
-                src="/bhayandar east.png"
-                alt="Bhayandar East"
-                className="h-full w-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-navy/80 to-transparent" />
-              <h3
-                className="absolute bottom-0 left-0 right-0 p-5 text-center text-2xl text-white md:text-3xl"
-                style={{ fontFamily: "var(--font-heading)" }}
-              >
-                Bhayandar East
-              </h3>
-            </div>
-          </Link>
-
-          <Link
-            to="/projects?locality=bhayandar-west"
-            className="block overflow-hidden rounded-2xl shadow-md"
-          >
-            <div className="relative h-64 md:h-80">
-              <img
-                src="/bhayandar west.png"
-                alt="Bhayandar West"
-                className="h-full w-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-navy/80 to-transparent" />
-              <h3
-                className="absolute bottom-0 left-0 right-0 p-5 text-center text-2xl text-white md:text-3xl"
-                style={{ fontFamily: "var(--font-heading)" }}
-              >
-                Bhayandar West
-              </h3>
-            </div>
-          </Link>
-
-          <Link
-            to="/projects?locality=mira-road"
-            className="block overflow-hidden rounded-2xl shadow-md"
-          >
-            <div className="relative h-64 md:h-80">
-              <img
-                src="/mira road east.png"
-                alt="Mira Road"
-                className="h-full w-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-navy/80 to-transparent" />
-              <h3
-                className="absolute bottom-0 left-0 right-0 p-5 text-center text-2xl text-white md:text-3xl"
-                style={{ fontFamily: "var(--font-heading)" }}
-              >
-                Mira Road
-              </h3>
-            </div>
-          </Link>
+          {locations.map(({ to, img, alt, name }) => (
+            <Link
+              key={to}
+              to={to}
+              className="group block overflow-hidden rounded-2xl shadow-md"
+            >
+              <div className="relative h-64 md:h-80">
+                <img
+                  src={img}
+                  alt={alt}
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+                <div
+                  className="absolute inset-0 bg-gradient-to-t from-navy/80 to-transparent transition-opacity duration-300 group-hover:opacity-0"
+                  aria-hidden
+                />
+                <div
+                  className="absolute inset-0 bg-gold/65 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                  aria-hidden
+                />
+                <div className="absolute inset-0 z-10 flex items-center justify-center">
+                  <h3
+                    className="text-center text-2xl text-white transition-opacity duration-300 group-hover:opacity-0 md:text-3xl"
+                    style={{ fontFamily: "var(--font-heading)" }}
+                  >
+                    {name}
+                  </h3>
+                  <span className="pointer-events-none absolute text-center font-sans text-sm font-semibold uppercase tracking-[0.3em] text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100 md:text-base">
+                    EXPLORE
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </section>

@@ -1,5 +1,6 @@
-import { useContext, useLayoutEffect, useEffect, useRef, useState } from "react";
+import { useContext, useLayoutEffect, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import { AppContext } from "../context/AppContext";
 import ProjectCard from "./ProjectCard";
 import { useReveal } from "../hooks/useReveal";
@@ -24,40 +25,46 @@ function ArrowRightIcon() {
 
 const FEATURED_COUNT = 3;
 
-function pickRandomProjects(projects, count) {
-  const pool = projects.filter((p) => p?.coverVideo || p?.coverImage);
-  if (pool.length <= count) return pool;
-  const shuffled = [...pool];
-  for (let i = shuffled.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled.slice(0, count);
-}
-
 export default function FeaturedProjects() {
-  const ctx = useContext(AppContext);
-  const allProjects = ctx?.allProjects ?? [];
-  const loading = ctx?.loading ?? false;
-  const assetUrl = ctx?.assetUrl ?? ((p) => p ?? "");
-  /** Same pattern as ArchitecturalVision: observe the whole section, default IO options. */
+  const { backendUrl, assetUrl: ctxAssetUrl, appLoading } = useContext(AppContext) ?? {};
+  const assetUrl = ctxAssetUrl ?? ((p) => p ?? "");
   const [sectionRef, visible] = useReveal();
   const [featured, setFeatured] = useState([]);
-  const hasPickedRef = useRef(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (loading || hasPickedRef.current) return;
-    hasPickedRef.current = true;
-    setFeatured(pickRandomProjects(allProjects, FEATURED_COUNT));
-  }, [loading, allProjects]);
+    if (appLoading || !backendUrl) return;
+    let cancelled = false;
+    setLoading(true);
+    setError("");
+    (async () => {
+      try {
+        const { data } = await axios.get(
+          `${backendUrl}/api/project/featured?limit=${FEATURED_COUNT}`,
+        );
+        if (cancelled) return;
+        if (data?.success) {
+          setFeatured(data.featuredProjects ?? []);
+        } else {
+          setFeatured([]);
+          setError(data?.message || "Could not load featured projects.");
+        }
+      } catch (err) {
+        if (cancelled) return;
+        setFeatured([]);
+        setError(err?.message || "Failed to load featured projects.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [appLoading, backendUrl]);
 
-  const showGrid = !loading && featured.length > 0;
+  const showGrid = !loading && !appLoading && featured.length > 0;
 
-  /**
-   * If the section was already intersecting during loading, `visible` is true
-   * when the grid first mounts — without a paint at opacity 0 the fade is skipped.
-   * Two rAFs after (showGrid && visible) match a minimal flush so CSS transition runs.
-   */
   const [revealChildren, setRevealChildren] = useState(false);
   useLayoutEffect(() => {
     if (!showGrid || !visible) {
@@ -85,6 +92,8 @@ export default function FeaturedProjects() {
       ? `${base} featured-fade${revealChildren ? " is-visible" : ""}`
       : base;
 
+  const busy = appLoading || loading;
+
   return (
     <section
       ref={sectionRef}
@@ -92,8 +101,10 @@ export default function FeaturedProjects() {
       aria-labelledby="featured-projects-heading"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {loading ? (
+        {busy ? (
           <p className="text-center text-sm text-navy/50">Loading projects…</p>
+        ) : error ? (
+          <p className="text-center text-sm text-navy/50">{error}</p>
         ) : featured.length === 0 ? (
           <p className="text-center text-sm text-navy/50">
             No projects with a cover image or cover video yet.

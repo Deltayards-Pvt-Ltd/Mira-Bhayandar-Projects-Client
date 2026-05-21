@@ -19,8 +19,15 @@ export default function Projects() {
   const ctx = useContext(AppContext);
   const [searchParams, setSearchParams] = useSearchParams();
   const allProjects = useMemo(() => ctx?.allProjects ?? [], [ctx?.allProjects]);
-  const loading = ctx?.loading ?? false;
+  const loading = ctx?.projectsLoading ?? false;
   const assetUrl = ctx?.assetUrl ?? ((p) => p ?? "");
+  const backendUrl = ctx?.backendUrl ?? "";
+  const refetchProjects = ctx?.refetchProjects;
+
+  useEffect(() => {
+    if (!backendUrl || !refetchProjects) return;
+    refetchProjects();
+  }, [backendUrl, refetchProjects]);
 
   const [searchInput, setSearchInput] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");

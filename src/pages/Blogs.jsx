@@ -1,4 +1,4 @@
-import { useContext, useMemo } from "react";
+import { useContext, useEffect, useMemo } from "react";
 import { AppContext } from "../context/AppContext";
 import BlogCard from "../components/BlogCard";
 import DreamHomeCta from "../components/DreamHomeCta";
@@ -6,8 +6,15 @@ import DreamHomeCta from "../components/DreamHomeCta";
 export default function Blogs() {
   const ctx = useContext(AppContext);
   const blogs = useMemo(() => ctx?.blogs ?? [], [ctx?.blogs]);
-  const loading = ctx?.loading ?? false;
+  const loading = ctx?.blogsLoading ?? false;
   const assetUrl = ctx?.assetUrl ?? ((p) => p ?? "");
+  const backendUrl = ctx?.backendUrl ?? "";
+  const refetchBlogs = ctx?.refetchBlogs;
+
+  useEffect(() => {
+    if (!backendUrl || !refetchBlogs) return;
+    refetchBlogs();
+  }, [backendUrl, refetchBlogs]);
 
   const total = blogs.length;
 

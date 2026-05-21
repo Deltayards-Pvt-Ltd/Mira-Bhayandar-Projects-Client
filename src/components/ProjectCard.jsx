@@ -97,6 +97,35 @@ function ArrowIcon({ className }) {
     </svg>
   );
 }
+function CertificateIcon({ className }) {
+  return (
+    <svg
+      className={className}
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {/* Card */}
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+
+      {/* Lines */}
+      <line x1="6" y1="9" x2="12" y2="9" />
+      <line x1="6" y1="12" x2="11" y2="12" />
+
+      {/* Badge */}
+      <circle cx="16.5" cy="10" r="2.5" />
+
+      {/* Ribbon */}
+      <path d="M15.5 12.2v3l1-0.7 1 0.7v-3" />
+    </svg>
+  );
+}
 
 /**
  * @param {{ project: Record<string, unknown>; assetUrl: (path: string) => string }} props
@@ -138,12 +167,12 @@ export default function ProjectCard({ project, assetUrl }) {
 
   const id = project?._id != null ? String(project._id) : "";
   const statusBadge = getStatusBadge(
-    typeof project?.status === "string" ? project.status : ""
+    typeof project?.status === "string" ? project.status : "",
   );
   const possessionLine = formatPossession(project?.reraPossession);
 
   return (
-    <article 
+    <article
       className="group cursor-pointer flex h-full flex-col overflow-hidden rounded-2xl border border-navy/12 bg-white shadow-[0_2px_6px_rgba(10,22,40,0.09),0_14px_44px_-4px_rgba(10,22,40,0.18)] transition-[border-color,box-shadow] duration-300 hover:border-gold/55 hover:shadow-[0_4px_10px_rgba(10,22,40,0.1),0_24px_56px_-6px_rgba(10,22,40,0.22)]"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -220,10 +249,7 @@ export default function ProjectCard({ project, assetUrl }) {
           ) : null}
         </div>
 
-        <div
-          className="my-3.5 border-t border-navy/[0.1]"
-          aria-hidden
-        />
+        <div className="my-3.5 border-t border-navy/[0.1]" aria-hidden />
 
         {layoutLine || areaLine ? (
           <p className="mb-0 min-h-[1.35rem] text-sm leading-relaxed text-navy/75">
@@ -238,13 +264,13 @@ export default function ProjectCard({ project, assetUrl }) {
             {areaLine ? <span>{areaLine}</span> : null}
           </p>
         ) : (
-          <div className="min-h-[1.35rem]" aria-hidden />
+          <span className="whitespace-nowrap text-sm tracking-[0.06em] text-navy/80">
+            Contact for layout details
+          </span>
         )}
 
-        <div
-          className="mt-auto border-t border-navy/[0.1] pt-4"
-        >
-          <div className="flex min-h-[44px] items-center justify-between gap-3">
+        <div className="mt-auto border-t border-navy/[0.1] pt-4 ">
+          <div className="flex min-h-[44px] items-center gap-3">
             {possessionLine ? (
               <div className="min-w-0 flex-1">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gold-ink">
@@ -255,11 +281,31 @@ export default function ProjectCard({ project, assetUrl }) {
                 </p>
               </div>
             ) : (
-              <div className="flex-1" aria-hidden />
+              <div className="inline-flex shrink-0 items-center gap-1.5">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 2l1.8 1.3 2.2-.3 1.3 1.8 2.1.8v2.2l1.6 1.6-.8 2.1.8 2.1-1.6 1.6v2.2l-2.1.8-1.3 1.8-2.2-.3L12 22l-1.8-1.3-2.2.3-1.3-1.8-2.1-.8v-2.2L3 13.6l.8-2.1L3 9.4l1.6-1.6V5.6l2.1-.8 1.3-1.8 2.2.3L12 2z" />
+                  <circle cx="12" cy="11" r="4" />
+                  <path d="m10.8 11 1 1 2-2" />
+                  <path d="M8 21l2-5" />
+                  <path d="M16 21l-2-5" />
+                </svg>
+                <span className="whitespace-nowrap text-sm font-semibold uppercase tracking-[0.06em] text-navy/80">
+                  RERA Certified
+                </span>
+              </div>
             )}
             <Link
               to={id ? `/projects/${id}` : "/projects"}
-              className="relative inline-flex min-h-[44px] shrink-0 items-center justify-end"
+              className="relative ml-auto inline-flex min-h-[44px] shrink-0 items-center justify-end"
               aria-label={`View project: ${name}`}
             >
               <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold text-navy shadow-sm transition-all duration-300 group-hover:scale-90 group-hover:opacity-0">

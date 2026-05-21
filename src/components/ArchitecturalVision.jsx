@@ -41,20 +41,23 @@ export default function ArchitecturalVision() {
             }`}
           >
             <p className="mb-3 block font-sans text-xs font-semibold uppercase tracking-[0.2em] text-gold">
-              Architectural vision
+              Building the Future
             </p>
             <h2
               id="arch-vision-heading"
               className="mb-4 text-4xl tracking-tight text-navy md:text-5xl"
               style={{ fontFamily: "var(--font-heading)" }}
             >
-              Building the{" "}
-              <span className="text-gradient-gold">Future</span>
+              Mira Bhayandar is Your{" "}
+              <span className="text-gradient-gold">Oyster</span>
             </h2>
             <p className="max-w-xl text-base leading-relaxed text-navy/60 md:text-lg">
-              From visionary blueprints to landmark residences — discover
-              projects that redefine modern living in Mira-Bhayandar. Every
-              detail is crafted for families who expect the extraordinary.
+              From upcoming metro connectivity to smoother highway access and
+              evolving infrastructure, Mira Bhayandar is turning into the
+              perfect balance of fast-paced city life and comfortable living.
+            </p>
+            <p className="max-w-xl font-bold leading-relaxed text-navy/60 md:text-lg">
+              The future isn’t arriving here. It’s already taking shape.
             </p>
           </div>
         </div>
