@@ -14,7 +14,7 @@ export default function ArchitecturalVision() {
           <div className="lg:col-span-3">
             <div className="relative aspect-[16/10] overflow-hidden rounded-2xl shadow-2xl">
               <img
-                src="/aria.jpg"
+                src="/mira bhayandar.png"
                 alt="Aerial view of a modern residential development in Mira-Bhayandar"
                 className="h-full w-full object-cover"
                 width={1600}

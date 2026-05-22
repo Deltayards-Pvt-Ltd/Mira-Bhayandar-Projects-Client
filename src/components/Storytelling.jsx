@@ -46,7 +46,7 @@ export default function Storytelling() {
             transitionDelay: "100ms",
           }}
         >
-          We don&apos;t just sell homes.
+          We don't just sell homes.
         </h2>
 
         <h2

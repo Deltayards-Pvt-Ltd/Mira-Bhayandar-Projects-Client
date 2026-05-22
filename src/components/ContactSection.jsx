@@ -81,7 +81,7 @@ export default function ContactSection() {
               <span className="text-gold">from you!</span>
             </h2>
             <p className="mb-10 max-w-lg font-sans text-base leading-relaxed text-navy/65 md:text-lg">
-              Whether you&apos;re a first-time buyer or looking to upgrade, our
+              Whether you're a first-time buyer or looking to upgrade, our
               experts are here to help. Get personalized recommendations based on
               your budget and preferences.
             </p>
