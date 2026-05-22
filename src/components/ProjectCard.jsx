@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
@@ -6,6 +6,13 @@ function layoutAreaNum(layout) {
   const a = layout?.area;
   if (a === undefined || a === null || a === "") return null;
   const n = Number(a);
+  return Number.isFinite(n) ? n : null;
+}
+
+function layoutPriceNum(layout) {
+  const p = layout?.price;
+  if (p === undefined || p === null || p === "") return null;
+  const n = Number(p);
   return Number.isFinite(n) ? n : null;
 }
 
@@ -31,6 +38,16 @@ function formatAreaRange(layouts) {
   const hi = Math.max(...nums);
   if (lo === hi) return `${lo} sqft`;
   return `${lo} - ${hi} sqft`;
+}
+
+/** Min–max price in Lacs from layout prices. */
+function formatPriceRange(layouts) {
+  const nums = (layouts || []).map(layoutPriceNum).filter((n) => n != null);
+  if (nums.length === 0) return "";
+  const lo = Math.min(...nums);
+  const hi = Math.max(...nums);
+  if (lo === hi) return `₹${lo} L`;
+  return `₹${lo} - ${hi} L`;
 }
 
 function MapPinIcon({ className }) {
@@ -164,6 +181,7 @@ export default function ProjectCard({ project, assetUrl }) {
   const titles = formatLayoutTitles(layouts);
   const layoutLine = titles.join(" · ");
   const areaLine = formatAreaRange(layouts);
+  const priceLine = formatPriceRange(layouts);
 
   const id = project?._id != null ? String(project._id) : "";
   const statusBadge = getStatusBadge(
@@ -251,17 +269,29 @@ export default function ProjectCard({ project, assetUrl }) {
 
         <div className="my-3.5 border-t border-navy/[0.1]" aria-hidden />
 
-        {layoutLine || areaLine ? (
+        {layoutLine || areaLine || priceLine ? (
           <p className="mb-0 min-h-[1.35rem] text-sm leading-relaxed text-navy/75">
-            {layoutLine ? (
-              <span className="font-medium tracking-tight">{layoutLine}</span>
-            ) : null}
-            {layoutLine && areaLine ? (
-              <span className="mx-2 text-navy/35" aria-hidden>
-                |
-              </span>
-            ) : null}
-            {areaLine ? <span>{areaLine}</span> : null}
+            {[
+              layoutLine && {
+                key: "layout",
+                node: (
+                  <span className="font-medium tracking-tight">{layoutLine}</span>
+                ),
+              },
+              areaLine && { key: "area", node: <span>{areaLine}</span> },
+              priceLine && { key: "price", node: <span>{priceLine}</span> },
+            ]
+              .filter(Boolean)
+              .map((seg, i) => (
+                <Fragment key={seg.key}>
+                  {i > 0 ? (
+                    <span className="mx-2 text-navy/35" aria-hidden>
+                      |
+                    </span>
+                  ) : null}
+                  {seg.node}
+                </Fragment>
+              ))}
           </p>
         ) : (
           <span className="whitespace-nowrap text-sm tracking-[0.06em] text-navy/80">

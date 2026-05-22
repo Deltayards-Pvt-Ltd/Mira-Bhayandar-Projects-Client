@@ -30,6 +30,17 @@ function formatAreaSqft(area) {
   return `${n.toLocaleString("en-IN")} sq ft`;
 }
 
+function formatPriceLacs(price) {
+  if (price === undefined || price === null || price === "") return "";
+  const n = Number(price);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  return `₹${n} L`;
+}
+
+function layoutHasImage(layout) {
+  return Boolean(layout && String(layout.image || "").trim());
+}
+
 function planDownloadFilename(title, imagePath) {
   const ext =
     String(imagePath).match(/\.(jpe?g|png|webp|gif|avif)$/i)?.[1]?.toLowerCase() || "jpg";
@@ -65,7 +76,7 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
   const layouts = useMemo(() => {
     const raw = project?.layouts;
     if (!Array.isArray(raw)) return [];
-    return raw.filter((l) => l && String(l.image || "").trim());
+    return raw.filter((l) => l && String(l.title || "").trim());
   }, [project?.layouts]);
 
   const [idx, setIdx] = useState(0);
@@ -82,7 +93,10 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
     ? String(active?.title || "Plan").trim() || "Plan"
     : "";
   const areaLine = active ? formatAreaSqft(active?.area) : "";
-  const imgSrc = active ? assetUrl(String(active.image)) : "";
+  const priceLine = active ? formatPriceLacs(active?.price) : "";
+  const hasImage = active ? layoutHasImage(active) : false;
+  const imgSrc =
+    active && hasImage ? assetUrl(String(active.image)) : "";
   const imagePath = active ? String(active?.image || "") : "";
 
   const downloadPlanImage = useCallback(async () => {
@@ -196,47 +210,61 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
               </p>
             </div>
             <div className="sm:text-right">
-              <p className="mt-0.5 text-lg font-medium tabular-nums tracking-tight text-white/95 sm:text-xl">
-                {areaLine || "—"}
-              </p>
-              {!areaLine ? (
+              {areaLine ? (
+                <p className="mt-0.5 text-lg font-medium tabular-nums tracking-tight text-white/95 sm:text-xl">
+                  {areaLine}
+                </p>
+              ) : null}
+              {priceLine ? (
+                <p className="mt-0.5 text-lg font-medium tabular-nums tracking-tight text-gold-light sm:text-xl">
+                  {priceLine}
+                </p>
+              ) : null}
+              {!areaLine && !priceLine ? (
+                <p className="mt-0.5 text-lg font-medium tracking-tight text-white/50 sm:text-xl">
+                  —
+                </p>
+              ) : null}
+              {!areaLine && !priceLine && brochureHref ? (
                 <p className="mt-0.5 text-xs text-white/45">Details in brochure</p>
               ) : null}
             </div>
           </div>
         </div>
 
-        <div
-          id="plan-panel"
-          role="tabpanel"
-          aria-labelledby={`plan-tab-${idx}`}
-          className="mt-4 overflow-hidden rounded-2xl border border-white/15 bg-white/[0.04] p-1 shadow-[0_24px_80px_-28px_rgba(0,0,0,0.55)] ring-1 ring-white/10 backdrop-blur-sm sm:mt-5 sm:p-1.5"
-        >
+        {hasImage ? (
           <div
-            className="relative flex items-center justify-center overflow-auto rounded-[14px] bg-white p-2 sm:p-4"
-            style={{ maxHeight: planViewportMax }}
+            id="plan-panel"
+            role="tabpanel"
+            aria-labelledby={`plan-tab-${idx}`}
+            className="mt-4 overflow-hidden rounded-2xl border border-white/15 bg-white/[0.04] p-1 shadow-[0_24px_80px_-28px_rgba(0,0,0,0.55)] ring-1 ring-white/10 backdrop-blur-sm sm:mt-5 sm:p-1.5"
           >
-            <img
-              key={imgSrc}
-              src={imgSrc}
-              alt={`${title} floor plan`}
-              className="mx-auto w-full max-w-full object-contain"
+            <div
+              className="relative flex items-center justify-center overflow-auto rounded-[14px] bg-white p-2 sm:p-4"
               style={{ maxHeight: planViewportMax }}
-              loading="lazy"
-              decoding="async"
-            />
-            <button
-              type="button"
-              onClick={downloadPlanImage}
-              disabled={downloading || !imgSrc}
-              aria-label="Download floor plan image"
-              className="absolute bottom-3 left-3 z-10 inline-flex items-center gap-2 rounded-full border border-navy/15 bg-white/95 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-navy shadow-[0_8px_24px_-8px_rgba(0,0,0,0.35)] backdrop-blur-sm transition-[background-color,box-shadow] hover:bg-white hover:shadow-[0_10px_28px_-8px_rgba(0,0,0,0.4)] disabled:cursor-wait disabled:opacity-70 sm:bottom-4 sm:left-4 sm:px-3.5 sm:py-2.5 sm:text-[11px]"
             >
-              <DownloadIcon className="shrink-0 text-navy" />
-              {downloading ? "Saving…" : "Download"}
-            </button>
+              <img
+                key={imgSrc}
+                src={imgSrc}
+                alt={`${title} floor plan`}
+                className="mx-auto w-full max-w-full object-contain"
+                style={{ maxHeight: planViewportMax }}
+                loading="lazy"
+                decoding="async"
+              />
+              <button
+                type="button"
+                onClick={downloadPlanImage}
+                disabled={downloading || !imgSrc}
+                aria-label="Download floor plan image"
+                className="absolute bottom-3 left-3 z-10 inline-flex items-center gap-2 rounded-full border border-navy/15 bg-white/95 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-navy shadow-[0_8px_24px_-8px_rgba(0,0,0,0.35)] backdrop-blur-sm transition-[background-color,box-shadow] hover:bg-white hover:shadow-[0_10px_28px_-8px_rgba(0,0,0,0.4)] disabled:cursor-wait disabled:opacity-70 sm:bottom-4 sm:left-4 sm:px-3.5 sm:py-2.5 sm:text-[11px]"
+              >
+                <DownloadIcon className="shrink-0 text-navy" />
+                {downloading ? "Saving…" : "Download"}
+              </button>
+            </div>
           </div>
-        </div>
+        ) : null}
 
         {brochureHref ? (
           <a

@@ -42,14 +42,13 @@ function PhoneScanIcon({ className }) {
   );
 }
 
-/** Crops MAHARERA PNG frame so only the QR shows. */
 function QrImage({ src, alt }) {
   return (
-    <div className="h-28 w-28 shrink-0 overflow-hidden sm:h-32 sm:w-32">
+    <div className="flex h-28 w-28 shrink-0 items-center justify-center sm:h-32 sm:w-32">
       <img
         src={src}
         alt={alt}
-        className="block size-full border-0 object-cover object-center outline-none [clip-path:inset(14%)] scale-[2.15] sm:scale-[2.25]"
+        className="max-h-full max-w-full object-contain"
         loading="lazy"
         decoding="async"
       />
