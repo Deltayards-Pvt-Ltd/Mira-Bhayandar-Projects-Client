@@ -1,4 +1,5 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import axios from "axios";
 import { AppContext } from "../context/AppContext";
 
@@ -23,11 +24,78 @@ function DownloadIcon({ className }) {
   );
 }
 
+function ChevronLeft({ className }) {
+  return (
+    <svg
+      className={className}
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="m15 18-6-6 6-6" />
+    </svg>
+  );
+}
+
+function ChevronRight({ className }) {
+  return (
+    <svg
+      className={className}
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  );
+}
+
+function CloseIcon({ className }) {
+  return (
+    <svg
+      className={className}
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  );
+}
+
 function formatAreaSqft(area) {
   if (area === undefined || area === null || area === "") return "";
-  const n = Number(area);
-  if (!Number.isFinite(n) || n <= 0) return "";
-  return `${n.toLocaleString("en-IN")} sq ft`;
+  const s = String(area).trim();
+  if (!s) return "";
+  if (/sq\s*ft/i.test(s)) return s;
+  if (/^\d+(\.\d+)?$/.test(s)) {
+    const n = Number(s);
+    if (Number.isFinite(n) && n > 0) {
+      return `${n.toLocaleString("en-IN")} sq ft`;
+    }
+    return "";
+  }
+  if (/\d/.test(s)) return `${s} sq ft`;
+  return "";
 }
 
 function formatPriceLacs(price) {
@@ -37,8 +105,14 @@ function formatPriceLacs(price) {
   return `₹${n} L`;
 }
 
-function layoutHasImage(layout) {
-  return Boolean(layout && String(layout.image || "").trim());
+function layoutImageUrls(layout) {
+  if (!layout) return [];
+  const fromArray = Array.isArray(layout.images)
+    ? layout.images.map((u) => String(u || "").trim()).filter(Boolean)
+    : [];
+  if (fromArray.length) return fromArray;
+  const single = String(layout.image || "").trim();
+  return single ? [single] : [];
 }
 
 function planDownloadFilename(title, imagePath) {
@@ -53,12 +127,6 @@ function planDownloadFilename(title, imagePath) {
   return `${safe}.${ext}`;
 }
 
-/**
- * @param {{
- *   project: Record<string, unknown>;
- *   assetUrl: (path: string) => string;
- * }} props
- */
 function saveBlobAsFile(blob, filename) {
   const objectUrl = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -80,6 +148,9 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
   }, [project?.layouts]);
 
   const [idx, setIdx] = useState(0);
+  const [previewIdx, setPreviewIdx] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIdx, setLightboxIdx] = useState(0);
   const [downloading, setDownloading] = useState(false);
   const brochure = String(project?.browcherPdf || "").trim();
   const brochureHref = brochure ? assetUrl(brochure) : "";
@@ -89,15 +160,68 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
   }, [layouts.length]);
 
   const active = layouts.length ? layouts[idx] ?? layouts[0] : null;
+  const images = useMemo(() => layoutImageUrls(active), [active]);
+  const n = images.length;
+
+  useEffect(() => {
+    setPreviewIdx(0);
+    setLightboxIdx(0);
+    setLightboxOpen(false);
+  }, [idx]);
+
   const title = active
     ? String(active?.title || "Plan").trim() || "Plan"
     : "";
   const areaLine = active ? formatAreaSqft(active?.area) : "";
   const priceLine = active ? formatPriceLacs(active?.price) : "";
-  const hasImage = active ? layoutHasImage(active) : false;
-  const imgSrc =
-    active && hasImage ? assetUrl(String(active.image)) : "";
-  const imagePath = active ? String(active?.image || "") : "";
+
+  const goPrev = useCallback(() => {
+    if (n < 2) return;
+    const step = (i) => (i - 1 + n) % n;
+    if (lightboxOpen) setLightboxIdx(step);
+    else setPreviewIdx(step);
+  }, [lightboxOpen, n]);
+
+  const goNext = useCallback(() => {
+    if (n < 2) return;
+    const step = (i) => (i + 1) % n;
+    if (lightboxOpen) setLightboxIdx(step);
+    else setPreviewIdx(step);
+  }, [lightboxOpen, n]);
+
+  const openLightbox = useCallback(() => {
+    setLightboxIdx(previewIdx);
+    setLightboxOpen(true);
+  }, [previewIdx]);
+
+  const closeLightbox = useCallback(() => setLightboxOpen(false), []);
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowLeft") goPrev();
+      if (e.key === "ArrowRight") goNext();
+    };
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [lightboxOpen, closeLightbox, goPrev, goNext]);
+
+  const safePreviewIdx = n ? Math.min(previewIdx, n - 1) : 0;
+  const safeLbIdx = n ? Math.min(lightboxIdx, n - 1) : 0;
+  const activeImageIdx = lightboxOpen ? safeLbIdx : safePreviewIdx;
+  const imagePath = n ? images[activeImageIdx] : "";
+  const previewSrc = n ? assetUrl(images[safePreviewIdx]) : "";
+  const imgSrc = imagePath ? assetUrl(imagePath) : "";
+  const multiImages = n > 1;
+
+  const planViewportMax =
+    "min(calc(100dvh - 5.5rem - env(safe-area-inset-top, 0px) - 11.5rem), 28rem)";
 
   const downloadPlanImage = useCallback(async () => {
     if (!imgSrc || downloading) return;
@@ -137,8 +261,105 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
   if (layouts.length === 0) return null;
 
   const navOffset = "calc(5.5rem + env(safe-area-inset-top, 0px))";
-  const planViewportMax =
-    "min(calc(100dvh - 5.5rem - env(safe-area-inset-top, 0px) - 11.5rem), 28rem)";
+
+  const lightbox =
+    lightboxOpen && n > 0 ? (
+      <div
+        className="fixed inset-0 z-[200] flex items-center justify-center bg-navy/92 p-4 backdrop-blur-md"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${title} floor plan`}
+        onClick={closeLightbox}
+      >
+        <button
+          type="button"
+          className="absolute right-4 top-4 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white transition-colors hover:bg-white/20"
+          aria-label="Close floor plan viewer"
+          onClick={(e) => {
+            e.stopPropagation();
+            closeLightbox();
+          }}
+        >
+          <CloseIcon />
+        </button>
+
+        {n > 1 ? (
+          <>
+            <button
+              type="button"
+              className="absolute left-2 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white transition-colors hover:bg-white/20 sm:left-6 md:h-14 md:w-14"
+              aria-label="Previous floor plan"
+              onClick={(e) => {
+                e.stopPropagation();
+                goPrev();
+              }}
+            >
+              <ChevronLeft />
+            </button>
+            <button
+              type="button"
+              className="absolute right-2 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white transition-colors hover:bg-white/20 sm:right-6 md:h-14 md:w-14"
+              aria-label="Next floor plan"
+              onClick={(e) => {
+                e.stopPropagation();
+                goNext();
+              }}
+            >
+              <ChevronRight />
+            </button>
+          </>
+        ) : null}
+
+        <div
+          className="relative z-10 mx-auto flex max-h-[92vh] w-full max-w-5xl flex-col items-center gap-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="w-full text-center">
+            <h3 className="text-xl font-medium tracking-tight text-white sm:text-2xl">
+              {title}
+            </h3>
+            {areaLine ? (
+              <p className="mt-1 text-base tabular-nums text-gold-light sm:text-lg">
+                {areaLine}
+              </p>
+            ) : null}
+            {priceLine ? (
+              <p className="mt-0.5 text-sm text-white/70">{priceLine}</p>
+            ) : null}
+          </div>
+
+          <div className="relative w-full overflow-hidden rounded-2xl border border-white/15 bg-navy-light/80 shadow-2xl ring-1 ring-white/10">
+            <div className="flex max-h-[min(72vh,680px)] min-h-[200px] items-center justify-center bg-black/20 p-3 sm:p-6">
+              <img
+                key={imgSrc}
+                src={imgSrc}
+                alt={`${title} floor plan`}
+                className="max-h-[min(68vh,640px)] w-full object-contain"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            {n > 1 ? (
+              <p className="text-sm font-medium text-white/80">
+                <span className="text-gold-light">{safeLbIdx + 1}</span>
+                <span className="text-white/40"> / </span>
+                <span>{n}</span>
+              </p>
+            ) : null}
+            <button
+              type="button"
+              onClick={downloadPlanImage}
+              disabled={downloading}
+              className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-white/20 disabled:opacity-60"
+            >
+              <DownloadIcon />
+              {downloading ? "Saving…" : "Download"}
+            </button>
+          </div>
+        </div>
+      </div>
+    ) : null;
 
   return (
     <section
@@ -225,14 +446,11 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
                   —
                 </p>
               ) : null}
-              {!areaLine && !priceLine && brochureHref ? (
-                <p className="mt-0.5 text-xs text-white/45">Details in brochure</p>
-              ) : null}
             </div>
           </div>
         </div>
 
-        {hasImage ? (
+        {n > 0 ? (
           <div
             id="plan-panel"
             role="tabpanel"
@@ -240,31 +458,82 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
             className="mt-4 overflow-hidden rounded-2xl border border-white/15 bg-white/[0.04] p-1 shadow-[0_24px_80px_-28px_rgba(0,0,0,0.55)] ring-1 ring-white/10 backdrop-blur-sm sm:mt-5 sm:p-1.5"
           >
             <div
-              className="relative flex items-center justify-center overflow-auto rounded-[14px] bg-white p-2 sm:p-4"
+              className="relative flex items-center justify-center overflow-hidden rounded-[14px] bg-white p-2 sm:p-4"
               style={{ maxHeight: planViewportMax }}
             >
-              <img
-                key={imgSrc}
-                src={imgSrc}
-                alt={`${title} floor plan`}
-                className="mx-auto w-full max-w-full object-contain"
-                style={{ maxHeight: planViewportMax }}
-                loading="lazy"
-                decoding="async"
-              />
+              {multiImages ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={goPrev}
+                    aria-label="Previous floor plan image"
+                    className="absolute left-2 top-1/2 z-20 -translate-y-1/2 rounded-full border border-navy/15 bg-white/95 p-2 text-navy shadow-md transition hover:bg-white sm:left-3"
+                  >
+                    <ChevronLeft />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={goNext}
+                    aria-label="Next floor plan image"
+                    className="absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full border border-navy/15 bg-white/95 p-2 text-navy shadow-md transition hover:bg-white sm:right-3"
+                  >
+                    <ChevronRight />
+                  </button>
+                </>
+              ) : null}
+
               <button
                 type="button"
-                onClick={downloadPlanImage}
-                disabled={downloading || !imgSrc}
+                onClick={openLightbox}
+                className={`relative w-full cursor-zoom-in overflow-hidden text-left ${multiImages ? "px-10 sm:px-12" : ""}`}
+                aria-label={`View ${title} floor plan full size`}
+              >
+                <div
+                  className="flex transition-transform duration-300 ease-out"
+                  style={{ transform: `translateX(-${safePreviewIdx * 100}%)` }}
+                >
+                  {images.map((path, i) => (
+                    <div
+                      key={`${path}-${i}`}
+                      className="flex min-w-full shrink-0 justify-center"
+                    >
+                      <img
+                        src={assetUrl(path)}
+                        alt={`${title} floor plan ${i + 1}`}
+                        className="mx-auto w-full max-w-full object-contain"
+                        style={{ maxHeight: planViewportMax }}
+                        loading={i === 0 ? "lazy" : "eager"}
+                        decoding="async"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </button>
+
+              {multiImages ? (
+                <p className="absolute bottom-3 right-3 z-10 rounded-full bg-navy/75 px-2.5 py-1 text-[10px] font-semibold tabular-nums text-white sm:bottom-4 sm:right-4">
+                  {safePreviewIdx + 1} / {n}
+                </p>
+              ) : null}
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  downloadPlanImage();
+                }}
+                disabled={downloading || !previewSrc}
                 aria-label="Download floor plan image"
-                className="absolute bottom-3 left-3 z-10 inline-flex items-center gap-2 rounded-full border border-navy/15 bg-white/95 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-navy shadow-[0_8px_24px_-8px_rgba(0,0,0,0.35)] backdrop-blur-sm transition-[background-color,box-shadow] hover:bg-white hover:shadow-[0_10px_28px_-8px_rgba(0,0,0,0.4)] disabled:cursor-wait disabled:opacity-70 sm:bottom-4 sm:left-4 sm:px-3.5 sm:py-2.5 sm:text-[11px]"
+                className="absolute bottom-3 left-3 z-10 inline-flex items-center gap-2 rounded-full border border-navy/15 bg-white/95 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-navy shadow-[0_8px_24px_-8px_rgba(0,0,0,0.35)] backdrop-blur-sm transition hover:bg-white disabled:cursor-wait disabled:opacity-70 sm:bottom-4 sm:left-4 sm:px-3.5 sm:py-2.5 sm:text-[11px]"
               >
                 <DownloadIcon className="shrink-0 text-navy" />
                 {downloading ? "Saving…" : "Download"}
               </button>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <p className="mt-5 text-sm text-white/50">No floor plan images for this layout.</p>
+        )}
 
         {brochureHref ? (
           <a
@@ -278,6 +547,10 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
           </a>
         ) : null}
       </div>
+
+      {typeof document !== "undefined" && lightbox
+        ? createPortal(lightbox, document.body)
+        : null}
     </section>
   );
 }

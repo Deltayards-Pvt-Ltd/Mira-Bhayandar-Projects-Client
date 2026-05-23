@@ -2,11 +2,15 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
-function layoutAreaNum(layout) {
+function layoutAreaNums(layout) {
   const a = layout?.area;
-  if (a === undefined || a === null || a === "") return null;
-  const n = Number(a);
-  return Number.isFinite(n) ? n : null;
+  if (a === undefined || a === null || a === "") return [];
+  const s = String(a).trim();
+  const single = Number(s);
+  if (Number.isFinite(single) && /^\d+(\.\d+)?$/.test(s)) return [single];
+  const matches = s.match(/\d+(?:\.\d+)?/g);
+  if (!matches) return [];
+  return matches.map(Number).filter((n) => Number.isFinite(n));
 }
 
 function layoutPriceNum(layout) {
@@ -32,7 +36,7 @@ function formatLayoutTitles(layouts) {
 
 /** Min–max sqft from numeric layout areas; single layout → one number. */
 function formatAreaRange(layouts) {
-  const nums = (layouts || []).map(layoutAreaNum).filter((n) => n != null);
+  const nums = (layouts || []).flatMap(layoutAreaNums);
   if (nums.length === 0) return "";
   const lo = Math.min(...nums);
   const hi = Math.max(...nums);
