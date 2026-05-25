@@ -96,6 +96,9 @@ function getStatusBadge(status) {
   if (s === "Under Construction") {
     return { label: s, className: "bg-yellow-400 text-navy" };
   }
+  if (s === "Upcoming") {
+    return { label: s, className: "bg-gold text-navy" };
+  }
   return null;
 }
 
@@ -149,9 +152,9 @@ function CertificateIcon({ className }) {
 }
 
 /**
- * @param {{ project: Record<string, unknown>; assetUrl: (path: string) => string }} props
+ * @param {{ project: Record<string, unknown>; assetUrl: (path: string) => string; compact?: boolean }} props
  */
-export default function ProjectCard({ project, assetUrl }) {
+export default function ProjectCard({ project, assetUrl, compact = false }) {
   const [videoFailed, setVideoFailed] = useState(false);
   const [hovered, setHovered] = useState(false);
   const videoRef = useRef(null);
@@ -256,7 +259,9 @@ export default function ProjectCard({ project, assetUrl }) {
         ) : null}
       </div>
 
-      <div className="flex flex-1 flex-col px-5 pb-5 pt-5 sm:px-6 sm:pb-6 sm:pt-6">
+      <div
+        className={`flex flex-1 flex-col px-5 sm:px-6 ${compact ? "pb-5 pt-5 sm:pb-5 sm:pt-5" : "pb-5 pt-5 sm:pb-6 sm:pt-6"}`}
+      >
         <div className="flex min-w-0 items-baseline justify-between gap-3">
           <h3
             className="min-w-0 flex-1 truncate text-[1.65rem] font-normal leading-[1.15] tracking-tight text-navy sm:text-[1.85rem]"
@@ -264,80 +269,84 @@ export default function ProjectCard({ project, assetUrl }) {
           >
             {name}
           </h3>
-          {builder ? (
+          {!compact && builder ? (
             <p className="max-w-[42%] shrink-0 text-right text-[11px] font-semibold uppercase leading-snug tracking-[0.14em] text-gold-ink/90 sm:text-xs">
               By {builder}
             </p>
           ) : null}
         </div>
 
-        <div className="my-3.5 border-t border-navy/[0.1]" aria-hidden />
+        {!compact ? (
+          <>
+            <div className="my-3.5 border-t border-navy/[0.1]" aria-hidden />
 
-        {layoutLine || areaLine || priceLine ? (
-          <p className="mb-0 min-h-[1.35rem] text-sm leading-relaxed text-navy/75">
-            {[
-              layoutLine && {
-                key: "layout",
-                node: (
-                  <span className="font-medium tracking-tight">{layoutLine}</span>
-                ),
-              },
-              areaLine && { key: "area", node: <span>{areaLine}</span> },
-              priceLine && { key: "price", node: <span>{priceLine}</span> },
-            ]
-              .filter(Boolean)
-              .map((seg, i) => (
-                <Fragment key={seg.key}>
-                  {i > 0 ? (
-                    <span className="mx-2 text-navy/35" aria-hidden>
-                      |
-                    </span>
-                  ) : null}
-                  {seg.node}
-                </Fragment>
-              ))}
-          </p>
-        ) : (
-          <span className="whitespace-nowrap text-sm tracking-[0.06em] text-navy/80">
-            Contact for layout details
-          </span>
-        )}
-
-        <div className="mt-auto border-t border-navy/[0.1] pt-4 ">
-          <div className="flex min-h-[44px] items-center gap-3">
-            {possessionLine ? (
-              <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gold-ink">
-                  Possession
-                </p>
-                <p className="mt-0.5 truncate text-sm font-medium leading-snug text-navy/80">
-                  {possessionLine}
-                </p>
-              </div>
+            {layoutLine || areaLine || priceLine ? (
+              <p className="mb-0 min-h-[1.35rem] text-sm leading-relaxed text-navy/75">
+                {[
+                  layoutLine && {
+                    key: "layout",
+                    node: (
+                      <span className="font-medium tracking-tight">{layoutLine}</span>
+                    ),
+                  },
+                  areaLine && { key: "area", node: <span>{areaLine}</span> },
+                  priceLine && { key: "price", node: <span>{priceLine}</span> },
+                ]
+                  .filter(Boolean)
+                  .map((seg, i) => (
+                    <Fragment key={seg.key}>
+                      {i > 0 ? (
+                        <span className="mx-2 text-navy/35" aria-hidden>
+                          |
+                        </span>
+                      ) : null}
+                      {seg.node}
+                    </Fragment>
+                  ))}
+              </p>
             ) : (
-              <div className="inline-flex shrink-0 items-center gap-1.5">
-                <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/12 text-gold-ink">
-                  <CertificateIcon className="h-4 w-4" />
-                </span>
-                <span className="whitespace-nowrap text-sm font-semibold uppercase tracking-[0.06em] text-navy/80">
-                  RERA Certified
-                </span>
-              </div>
+              <span className="whitespace-nowrap text-sm tracking-[0.06em] text-navy/80">
+                Contact for layout details
+              </span>
             )}
-            <Link
-              to={id ? `/projects/${id}` : "/projects"}
-              className="relative ml-auto inline-flex min-h-[44px] shrink-0 items-center justify-end"
-              aria-label={`View project: ${name}`}
-            >
-              <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold text-navy shadow-sm transition-all duration-300 group-hover:scale-90 group-hover:opacity-0">
-                <ArrowIcon />
-              </span>
-              <span className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-gold px-5 py-2.5 text-center text-xs font-semibold uppercase leading-none tracking-[0.16em] text-navy opacity-0 shadow-sm transition-all duration-300 group-hover:pointer-events-auto group-hover:opacity-100">
-                View project
-              </span>
-            </Link>
-          </div>
-        </div>
+
+            <div className="mt-auto border-t border-navy/[0.1] pt-4 ">
+              <div className="flex min-h-[44px] items-center gap-3">
+                {possessionLine ? (
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gold-ink">
+                      Possession
+                    </p>
+                    <p className="mt-0.5 truncate text-sm font-medium leading-snug text-navy/80">
+                      {possessionLine}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="inline-flex shrink-0 items-center gap-1.5">
+                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/12 text-gold-ink">
+                      <CertificateIcon className="h-4 w-4" />
+                    </span>
+                    <span className="whitespace-nowrap text-sm font-semibold uppercase tracking-[0.06em] text-navy/80">
+                      RERA Certified
+                    </span>
+                  </div>
+                )}
+                <Link
+                  to={id ? `/projects/${id}` : "/projects"}
+                  className="relative ml-auto inline-flex min-h-[44px] shrink-0 items-center justify-end"
+                  aria-label={`View project: ${name}`}
+                >
+                  <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold text-navy shadow-sm transition-all duration-300 group-hover:scale-90 group-hover:opacity-0">
+                    <ArrowIcon />
+                  </span>
+                  <span className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-gold px-5 py-2.5 text-center text-xs font-semibold uppercase leading-none tracking-[0.16em] text-navy opacity-0 shadow-sm transition-all duration-300 group-hover:pointer-events-auto group-hover:opacity-100">
+                    View project
+                  </span>
+                </Link>
+              </div>
+            </div>
+          </>
+        ) : null}
       </div>
     </article>
   );

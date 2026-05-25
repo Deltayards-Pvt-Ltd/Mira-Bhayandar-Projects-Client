@@ -20,12 +20,12 @@ export default function HeroCarousel() {
   const { filterOptions } = useContext(AppContext) ?? {};
   const areas = filterOptions?.areas ?? [];
   const configurations = filterOptions?.configurations ?? [];
-  const statuses = filterOptions?.statuses ?? [];
+  const propertyTypes = filterOptions?.propertyTypes ?? [];
 
   const [videoFailed, setVideoFailed] = useState(false);
   const [pickedAreas, setPickedAreas] = useState([]);
   const [pickedConfigs, setPickedConfigs] = useState([]);
-  const [pickedStatuses, setPickedStatuses] = useState([]);
+  const [pickedPropertyTypes, setPickedPropertyTypes] = useState([]);
   const [openMenu, setOpenMenu] = useState(null);
   const searchRef = useRef(null);
 
@@ -41,7 +41,7 @@ export default function HeroCarousel() {
   const menus = {
     area: { title: "Select area", options: areas, picked: pickedAreas, set: setPickedAreas, noun: "area" },
     config: { title: "BHK & type", options: configurations, picked: pickedConfigs, set: setPickedConfigs, noun: "type" },
-    status: { title: "Project status", options: statuses, picked: pickedStatuses, set: setPickedStatuses, noun: "status" },
+    type: { title: "Property type", options: propertyTypes, picked: pickedPropertyTypes, set: setPickedPropertyTypes, noun: "type" },
   };
   const menu = openMenu ? menus[openMenu] : null;
 
@@ -52,7 +52,7 @@ export default function HeroCarousel() {
       buildProjectsPath({
         areas: pickedAreas,
         configurations: pickedConfigs,
-        statuses: pickedStatuses,
+        propertyTypes: pickedPropertyTypes,
       }),
     );
   }
@@ -128,12 +128,12 @@ export default function HeroCarousel() {
               />
               <div className="hidden h-10 w-px shrink-0 self-center bg-white/15 sm:block" />
               <SearchField
-                label="Status"
-                placeholder="Any status"
-                icon={StatusIcon}
-                summary={selectedLabel(pickedStatuses.length, "status")}
-                open={openMenu === "status"}
-                onOpen={() => setOpenMenu((m) => (m === "status" ? null : "status"))}
+                label="Type"
+                placeholder="Property type"
+                icon={TypeIcon}
+                summary={selectedLabel(pickedPropertyTypes.length, "type")}
+                open={openMenu === "type"}
+                onOpen={() => setOpenMenu((m) => (m === "type" ? null : "type"))}
               />
               <button
                 type="submit"
@@ -221,11 +221,12 @@ function HomeIcon({ className }) {
   );
 }
 
-function StatusIcon({ className }) {
+function TypeIcon({ className }) {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden>
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 6v6l4 2" />
+      <path d="M3 21h18" />
+      <path d="M5 21V7l8-4v18" />
+      <path d="M19 21V11l-6-4" />
     </svg>
   );
 }

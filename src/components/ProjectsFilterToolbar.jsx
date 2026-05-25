@@ -109,9 +109,9 @@ function FilterPill({ label, selected, onClick }) {
  *   configSelection: string[];
  *   onToggleConfig: (name: string) => void;
  *   onClearConfig: () => void;
- *   statusSelection: string[];
- *   onToggleStatus: (name: string) => void;
- *   onClearStatus: () => void;
+ *   propertyTypeSelection: string[];
+ *   onTogglePropertyType: (name: string) => void;
+ *   onClearPropertyType: () => void;
  *   onClearAll: () => void;
  * }} props
  */
@@ -125,20 +125,20 @@ export default function ProjectsFilterToolbar({
   configSelection,
   onToggleConfig,
   onClearConfig,
-  statusSelection,
-  onToggleStatus,
-  onClearStatus,
+  propertyTypeSelection,
+  onTogglePropertyType,
+  onClearPropertyType,
   onClearAll,
 }) {
   const { filterOptions } = useContext(AppContext) ?? {};
   const areaOptions = filterOptions?.areas ?? [];
   const configOptions = filterOptions?.configurations ?? [];
-  const statusOptions = filterOptions?.statuses ?? [];
+  const propertyTypeOptions = filterOptions?.propertyTypes ?? [];
 
   const hasActiveFilters =
     areaSelection.length > 0 ||
     configSelection.length > 0 ||
-    statusSelection.length > 0;
+    propertyTypeSelection.length > 0;
   const [filtersOpen, setFiltersOpen] = useState(hasActiveFilters);
   const searchFieldId = useId();
   const panelId = useId();
@@ -155,15 +155,15 @@ export default function ProjectsFilterToolbar({
     for (const name of configSelection) {
       chips.push({ key: `cfg-${name}`, label: name, onRemove: () => onToggleConfig(name) });
     }
-    for (const name of statusSelection) {
-      chips.push({ key: `st-${name}`, label: name, onRemove: () => onToggleStatus(name) });
+    for (const name of propertyTypeSelection) {
+      chips.push({ key: `type-${name}`, label: name, onRemove: () => onTogglePropertyType(name) });
     }
     return chips;
-  }, [areaSelection, configSelection, statusSelection, onToggleArea, onToggleConfig, onToggleStatus]);
+  }, [areaSelection, configSelection, propertyTypeSelection, onToggleArea, onToggleConfig, onTogglePropertyType]);
 
   const areasAll = areaSelection.length === 0;
   const configAll = configSelection.length === 0;
-  const statusAll = statusSelection.length === 0;
+  const propertyTypeAll = propertyTypeSelection.length === 0;
 
   return (
     <div className="flex w-full flex-col gap-3">
@@ -212,7 +212,7 @@ export default function ProjectsFilterToolbar({
           Filters
           {hasActiveFilters ? (
             <span className="flex size-5 items-center justify-center rounded-full bg-gold text-[10px] font-bold text-navy">
-              {areaSelection.length + configSelection.length + statusSelection.length}
+              {areaSelection.length + configSelection.length + propertyTypeSelection.length}
             </span>
           ) : null}
         </button>
@@ -280,16 +280,16 @@ export default function ProjectsFilterToolbar({
               </div>
               <div>
                 <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-gold-ink">
-                  Status
+                  Property type
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <FilterPill label="All" selected={statusAll} onClick={onClearStatus} />
-                  {statusOptions.map((name) => (
+                  <FilterPill label="All" selected={propertyTypeAll} onClick={onClearPropertyType} />
+                  {propertyTypeOptions.map((name) => (
                     <FilterPill
                       key={name}
                       label={name}
-                      selected={statusSelection.includes(name)}
-                      onClick={() => onToggleStatus(name)}
+                      selected={propertyTypeSelection.includes(name)}
+                      onClick={() => onTogglePropertyType(name)}
                     />
                   ))}
                 </div>

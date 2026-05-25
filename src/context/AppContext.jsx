@@ -16,10 +16,12 @@ export default function AppContextProvider({ children }) {
   const [projectsLoading, setProjectsLoading] = useState(false);
   const [blogsLoading, setBlogsLoading] = useState(false);
   const [testimonialsLoading, setTestimonialsLoading] = useState(false);
+  const [upcomingProjectsLoading, setUpcomingProjectsLoading] = useState(false);
+  const [upcomingProjects, setUpcomingProjects] = useState([]);
   const [filterOptions, setFilterOptions] = useState({
     areas: [],
     configurations: [],
-    statuses: [],
+    propertyTypes: [],
   });
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -31,7 +33,7 @@ export default function AppContextProvider({ children }) {
         setFilterOptions({
           areas: data.filterOptions.areas ?? [],
           configurations: data.filterOptions.configurations ?? [],
-          statuses: data.filterOptions.statuses ?? [],
+          propertyTypes: data.filterOptions.propertyTypes ?? [],
         });
       } else {
         console.warn("fetchFilterOptions:", data?.message);
@@ -117,6 +119,23 @@ export default function AppContextProvider({ children }) {
     }
   }, [backendUrl]);
 
+
+  const getUpcomingProjects = useCallback(async () => {
+    if (!backendUrl) return;
+    setUpcomingProjectsLoading(true);
+    try {
+      const { data } = await axios.get(`${backendUrl}/api/project/upcomingProjects`);
+      if (data?.success) setUpcomingProjects(data.upcomingProjects ?? []);
+    }
+    catch (err) {
+      console.error("getUpcomingProjects failed:", err?.message || err);
+      setUpcomingProjects([]);
+    }
+    finally {
+      setUpcomingProjectsLoading(false);
+    }
+  }, [backendUrl]);
+
   useEffect(() => {
     if (!backendUrl) {
       setTestimonials([]);
@@ -158,6 +177,8 @@ export default function AppContextProvider({ children }) {
       testimonials,
       blogs,
       contactSettings,
+      upcomingProjects,
+      upcomingProjectsLoading,
       filterOptions,
       appLoading,
       projectsLoading,
@@ -172,12 +193,15 @@ export default function AppContextProvider({ children }) {
       refetchTestimonials: getTestimonials,
       refetchBlogs: getBlogs,
       refetchContactSettings: getContactSettings,
+      refetchUpcomingProjects: getUpcomingProjects,
     }),
     [
       allProjects,
       testimonials,
       blogs,
       contactSettings,
+      upcomingProjects,
+      upcomingProjectsLoading,
       filterOptions,
       appLoading,
       projectsLoading,
@@ -190,6 +214,7 @@ export default function AppContextProvider({ children }) {
       getTestimonials,
       getBlogs,
       getContactSettings,
+      getUpcomingProjects,
     ]
   );
 

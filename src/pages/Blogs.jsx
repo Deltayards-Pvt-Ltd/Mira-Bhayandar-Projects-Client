@@ -1,7 +1,8 @@
-import { useContext, useEffect, useMemo } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import BlogCard from "../components/BlogCard";
 import DreamHomeCta from "../components/DreamHomeCta";
+import ProjectsPagination, { DEFAULT_PROJECTS_LIMIT } from "../components/ProjectsPagination";
 
 export default function Blogs() {
   const ctx = useContext(AppContext);
@@ -11,12 +12,30 @@ export default function Blogs() {
   const backendUrl = ctx?.backendUrl ?? "";
   const refetchBlogs = ctx?.refetchBlogs;
 
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(DEFAULT_PROJECTS_LIMIT);
+
   useEffect(() => {
     if (!backendUrl || !refetchBlogs) return;
     refetchBlogs();
   }, [backendUrl, refetchBlogs]);
 
   const total = blogs.length;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  const paginatedBlogs = useMemo(() => {
+    const start = (page - 1) * limit;
+    return blogs.slice(start, start + limit);
+  }, [blogs, page, limit]);
+
+  const handleLimitChange = (nextLimit) => {
+    setLimit(nextLimit);
+    setPage(1);
+  };
 
   const subline = useMemo(() => {
     if (total === 0) return "Market insights and updates for Mira-Bhayandar";
@@ -58,15 +77,24 @@ export default function Blogs() {
             No blogs yet. Add blogs in the admin panel.
           </p>
         ) : (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-6 lg:grid-cols-3 lg:gap-8">
-            {blogs.map((blog, index) => (
-              <BlogCard
-                key={blog._id ?? blog.id ?? index}
-                blog={blog}
-                assetUrl={assetUrl}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-6 lg:grid-cols-3 lg:gap-8">
+              {paginatedBlogs.map((blog, index) => (
+                <BlogCard
+                  key={blog._id ?? blog.id ?? index}
+                  blog={blog}
+                  assetUrl={assetUrl}
+                />
+              ))}
+            </div>
+            <ProjectsPagination
+              page={page}
+              limit={limit}
+              total={total}
+              onPageChange={setPage}
+              onLimitChange={handleLimitChange}
+            />
+          </>
         )}
       </section>
 

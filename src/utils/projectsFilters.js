@@ -12,14 +12,14 @@ function splitParam(value) {
  * @param {string} nameQuery
  * @param {string[]} areas
  * @param {string[]} configurations
- * @param {string[]} statuses
+ * @param {string[]} propertyTypes
  */
 export function filterProjects(
   projects,
   nameQuery,
   areas = [],
   configurations = [],
-  statuses = [],
+  propertyTypes = [],
 ) {
   const q = String(nameQuery || "")
     .trim()
@@ -33,9 +33,9 @@ export function filterProjects(
       if (!areas.includes(loc)) return false;
     }
 
-    if (statuses.length) {
-      const status = String(p.status || "").trim();
-      if (!statuses.includes(status)) return false;
+    if (propertyTypes.length) {
+      const type = String(p.propertyType || "").trim();
+      if (!propertyTypes.includes(type)) return false;
     }
 
     if (configurations.length) {
@@ -48,25 +48,25 @@ export function filterProjects(
 }
 
 /**
- * @param {{ q?: string; areas?: string[]; configurations?: string[]; statuses?: string[] }} filters
+ * @param {{ q?: string; areas?: string[]; configurations?: string[]; propertyTypes?: string[] }} filters
  */
 export function buildProjectsSearchParams({
   q = "",
   areas = [],
   configurations = [],
-  statuses = [],
+  propertyTypes = [],
 }) {
   const params = new URLSearchParams();
   const trimmed = String(q || "").trim();
   if (trimmed) params.set("q", trimmed);
   if (areas.length) params.set("area", areas.join(","));
   if (configurations.length) params.set("config", configurations.join(","));
-  if (statuses.length) params.set("status", statuses.join(","));
+  if (propertyTypes.length) params.set("propertyType", propertyTypes.join(","));
   return params;
 }
 
 /**
- * @param {{ q?: string; areas?: string[]; configurations?: string[]; statuses?: string[] }} filters
+ * @param {{ q?: string; areas?: string[]; configurations?: string[]; propertyTypes?: string[] }} filters
  */
 export function buildProjectsPath(filters) {
   const params = buildProjectsSearchParams(filters);
@@ -81,6 +81,6 @@ export function parseProjectsSearchParams(searchParams) {
   const q = (searchParams.get("q") || "").trim();
   const areas = splitParam(searchParams.get("area"));
   const configurations = splitParam(searchParams.get("config"));
-  const statuses = splitParam(searchParams.get("status"));
-  return { q, areas, configurations, statuses };
+  const propertyTypes = splitParam(searchParams.get("propertyType"));
+  return { q, areas, configurations, propertyTypes };
 }
