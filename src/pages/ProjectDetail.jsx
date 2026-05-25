@@ -98,7 +98,7 @@ export default function ProjectDetail() {
       <ProjectDetailAbout project={project} />
       <ProjectDetailGallery project={project} assetUrl={assetUrl} />
       <ProjectDetailPlans project={project} assetUrl={assetUrl} />
-      <ProjectMahaReraDetails project={project} assetUrl={assetUrl} />
+      <ProjectMahaReraDetails project={project} />
       <ProjectDetailEnquiry project={project} />
     </>
   );

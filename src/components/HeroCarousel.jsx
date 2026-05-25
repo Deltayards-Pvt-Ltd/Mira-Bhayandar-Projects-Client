@@ -1,153 +1,58 @@
-import { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
-import {
-  buildProjectsPath,
-  configIdsFromLabels,
-  localityIdsFromLabels,
-} from "../utils/projectsFilters";
+import { buildProjectsPath } from "../utils/projectsFilters";
 
-/** Drop your file in `client/public/videos/` and set the filename here. */
 const HERO_VIDEO_SRC = "/videos/hero.mp4";
 
-const FLOAT_GAP_PX = 8;
-const FLOAT_MARGIN_PX = 12;
-const FLOAT_LOCALITY_MAX_W = 448;
-const FLOAT_FLAT_MAX_W = 416;
-
-const LOCALITY_SHORT = {
-  "Bhayandar West": "B. West",
-  "Bhayandar East": "B. East",
-  "Mira Road": "Mira",
-};
-
-function shortLocalityLabel(full) {
-  return LOCALITY_SHORT[full] ?? (full.length > 11 ? `${full.slice(0, 10)}…` : full);
+function toggle(list, value) {
+  return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
 }
 
-function shortFlatLabel(name) {
-  if (/^jodi$/i.test(String(name).trim())) return "Jodi";
-  const m = /^(\d+(?:\.\d+)?)\s*bhk$/i.exec(String(name).trim());
-  return m ? `${m[1]}b` : name;
+function selectedLabel(count, noun) {
+  if (!count) return null;
+  if (count === 1) return `1 ${noun} selected`;
+  return `${count} selected`;
 }
 
 export default function HeroCarousel() {
   const navigate = useNavigate();
-  const { projectFilters } = useContext(AppContext) ?? {};
-  const localityOptions = useMemo(
-    () => projectFilters?.localities ?? [],
-    [projectFilters?.localities],
-  );
-  const configOptions = useMemo(
-    () => projectFilters?.configurations ?? [],
-    [projectFilters?.configurations],
-  );
-  const localityLabels = useMemo(
-    () => localityOptions.map((o) => o.label),
-    [localityOptions],
-  );
-  const configLabels = useMemo(
-    () => configOptions.map((o) => o.label),
-    [configOptions],
-  );
+  const { filterOptions } = useContext(AppContext) ?? {};
+  const areas = filterOptions?.areas ?? [];
+  const configurations = filterOptions?.configurations ?? [];
+  const statuses = filterOptions?.statuses ?? [];
+
   const [videoFailed, setVideoFailed] = useState(false);
-  const [openPanel, setOpenPanel] = useState(null);
-  const [localities, setLocalities] = useState(() => new Set());
-  const [flats, setFlats] = useState(() => new Set());
-  const [floatBox, setFloatBox] = useState(null);
-  const searchBarRef = useRef(null);
-  const localityTriggerRef = useRef(null);
-  const flatTriggerRef = useRef(null);
-  const floatingLayerRef = useRef(null);
-
-  function measureLocalityFloat() {
-    const el = localityTriggerRef.current;
-    if (!el) return null;
-    const r = el.getBoundingClientRect();
-    const vw = window.innerWidth;
-    const maxW = Math.min(FLOAT_LOCALITY_MAX_W, vw - 2 * FLOAT_MARGIN_PX);
-    const left = Math.max(
-      FLOAT_MARGIN_PX,
-      Math.min(r.left, vw - FLOAT_MARGIN_PX - maxW),
-    );
-    return { top: r.bottom + FLOAT_GAP_PX, left, width: maxW };
-  }
-
-  function measureFlatFloat() {
-    const el = flatTriggerRef.current;
-    if (!el) return null;
-    const r = el.getBoundingClientRect();
-    const vw = window.innerWidth;
-    const maxW = Math.min(FLOAT_FLAT_MAX_W, vw - 2 * FLOAT_MARGIN_PX);
-    let left = r.right - maxW;
-    left = Math.max(
-      FLOAT_MARGIN_PX,
-      Math.min(left, vw - FLOAT_MARGIN_PX - maxW),
-    );
-    return { top: r.bottom + FLOAT_GAP_PX, left, width: maxW };
-  }
-
-  useLayoutEffect(() => {
-    if (!openPanel) {
-      setFloatBox(null);
-      return;
-    }
-    function update() {
-      setFloatBox(
-        openPanel === "locality" ? measureLocalityFloat() : measureFlatFloat(),
-      );
-    }
-    update();
-    window.addEventListener("scroll", update, true);
-    window.addEventListener("resize", update);
-    return () => {
-      window.removeEventListener("scroll", update, true);
-      window.removeEventListener("resize", update);
-    };
-  }, [openPanel, localities, flats]);
+  const [pickedAreas, setPickedAreas] = useState([]);
+  const [pickedConfigs, setPickedConfigs] = useState([]);
+  const [pickedStatuses, setPickedStatuses] = useState([]);
+  const [openMenu, setOpenMenu] = useState(null);
+  const searchRef = useRef(null);
 
   useEffect(() => {
-    if (!openPanel) return;
-    const onPointerDown = (e) => {
-      if (
-        searchBarRef.current?.contains(e.target) ||
-        floatingLayerRef.current?.contains(e.target)
-      ) {
-        return;
-      }
-      setOpenPanel(null);
+    if (!openMenu) return;
+    const close = (e) => {
+      if (!searchRef.current?.contains(e.target)) setOpenMenu(null);
     };
-    document.addEventListener("pointerdown", onPointerDown, true);
-    return () =>
-      document.removeEventListener("pointerdown", onPointerDown, true);
-  }, [openPanel]);
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [openMenu]);
 
-  function toggleLocality(name) {
-    setLocalities((prev) => {
-      const next = new Set(prev);
-      if (next.has(name)) next.delete(name);
-      else next.add(name);
-      return next;
-    });
-  }
-
-  function toggleFlat(name) {
-    setFlats((prev) => {
-      const next = new Set(prev);
-      if (next.has(name)) next.delete(name);
-      else next.add(name);
-      return next;
-    });
-  }
+  const menus = {
+    area: { title: "Select area", options: areas, picked: pickedAreas, set: setPickedAreas, noun: "area" },
+    config: { title: "BHK & type", options: configurations, picked: pickedConfigs, set: setPickedConfigs, noun: "type" },
+    status: { title: "Project status", options: statuses, picked: pickedStatuses, set: setPickedStatuses, noun: "status" },
+  };
+  const menu = openMenu ? menus[openMenu] : null;
 
   function handleSearch(e) {
     e.preventDefault();
-    setOpenPanel(null);
+    setOpenMenu(null);
     navigate(
       buildProjectsPath({
-        localityIds: localityIdsFromLabels(localities, localityOptions),
-        configIds: configIdsFromLabels(flats, configOptions),
+        areas: pickedAreas,
+        configurations: pickedConfigs,
+        statuses: pickedStatuses,
       }),
     );
   }
@@ -172,7 +77,6 @@ export default function HeroCarousel() {
             <div className="absolute inset-0 bg-navy" aria-hidden />
           )}
         </div>
-
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-navy/70 via-navy/15 to-navy/95" />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy/65 via-transparent to-navy/30" />
         <div
@@ -186,284 +90,122 @@ export default function HeroCarousel() {
 
       <div className="relative z-10 mx-auto flex min-h-[100dvh] max-w-7xl flex-col justify-end gap-8 px-4 pt-[calc(5rem+env(safe-area-inset-top,0px))] pb-[max(2rem,env(safe-area-inset-bottom,0px))] sm:gap-10 sm:px-6 sm:pb-10 sm:pt-28 md:pb-14 md:pt-32 lg:px-8">
         <div className="flex min-h-0 flex-col gap-8 sm:gap-10">
-          <div className="max-w-4xl text-left ">
-            <h1 className="font-hero-title text-white flex flex-col gap-3">
-              <span className="">The Ultimate Buffet </span>
-              <span className="">Of Properties In</span>
+          <div className="max-w-4xl text-left">
+            <h1 className="font-hero-title flex flex-col gap-3 text-white">
+              <span>The Ultimate Buffet </span>
+              <span>Of Properties In</span>
               <span className="font-hero-accent block text-gold">Mira Bhayandar</span>
-
             </h1>
             <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-white/65 sm:mt-6 sm:text-base md:mt-7">
-              We&apos;re not here to overwhelm you with hundreds of irrelevant
-              listings. We focus on showcasing projects that genuinely matter to
-              Mira Bhayandar buyers, helping you save time, compare better, and make
-              smarter property decisions.
+              We&apos;re not here to overwhelm you with hundreds of irrelevant listings. We focus
+              on showcasing projects that genuinely matter to Mira Bhayandar buyers, helping you
+              save time, compare better, and make smarter property decisions.
             </p>
           </div>
 
-          <div className="flex flex-col gap-6 sm:gap-8">
-            <form
-              ref={searchBarRef}
-              onSubmit={handleSearch}
-              className="mx-auto w-full max-w-3xl"
-            >
-              <div className="flex flex-col gap-2 rounded-2xl border border-white/20 bg-white/[0.12] p-2 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.55)] backdrop-blur-md sm:flex-row sm:items-stretch sm:rounded-full sm:p-1.5 sm:pl-3">
-                <div
-                  ref={localityTriggerRef}
-                  className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-xl px-3 py-2 sm:min-h-0 sm:rounded-full sm:py-2"
-                >
-                  <PinIcon className="shrink-0 text-gold" />
-                  <div className="min-w-0 flex-1">
-                    <span className="block text-[9px] font-semibold uppercase tracking-[0.2em] text-white/45">
-                      Locality
-                    </span>
-                    {localities.size === 0 ? (
+          <form
+            ref={searchRef}
+            onSubmit={handleSearch}
+            className="mx-auto w-full max-w-3xl"
+          >
+            <div className="flex flex-col gap-2 rounded-2xl border border-white/20 bg-white/[0.12] p-2 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.55)] backdrop-blur-md sm:flex-row sm:items-stretch sm:rounded-full sm:p-1.5 sm:pl-3">
+              <SearchField
+                label="Locality"
+                placeholder="Add area"
+                icon={PinIcon}
+                summary={selectedLabel(pickedAreas.length, "area")}
+                open={openMenu === "area"}
+                onOpen={() => setOpenMenu((m) => (m === "area" ? null : "area"))}
+              />
+              <div className="hidden h-10 w-px shrink-0 self-center bg-white/15 sm:block" />
+              <SearchField
+                label="Flat"
+                placeholder="BHK / Type"
+                icon={HomeIcon}
+                summary={selectedLabel(pickedConfigs.length, "type")}
+                open={openMenu === "config"}
+                onOpen={() => setOpenMenu((m) => (m === "config" ? null : "config"))}
+              />
+              <div className="hidden h-10 w-px shrink-0 self-center bg-white/15 sm:block" />
+              <SearchField
+                label="Status"
+                placeholder="Any status"
+                icon={StatusIcon}
+                summary={selectedLabel(pickedStatuses.length, "status")}
+                open={openMenu === "status"}
+                onOpen={() => setOpenMenu((m) => (m === "status" ? null : "status"))}
+              />
+              <button
+                type="submit"
+                className="inline-flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl bg-gold px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-navy sm:w-auto sm:rounded-full sm:px-5 sm:py-2.5"
+              >
+                <SearchIconSolid className="text-navy" />
+                Search
+              </button>
+            </div>
+
+            {menu && menu.options.length > 0 ? (
+              <div className="mt-2 rounded-2xl border border-white/20 bg-navy/90 p-4 text-cream shadow-lg backdrop-blur-xl">
+                <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-gold">
+                  {menu.title}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {menu.options.map((name) => {
+                    const on = menu.picked.includes(name);
+                    return (
                       <button
+                        key={name}
                         type="button"
-                        className="mt-0.5 block w-full truncate text-left text-sm font-medium text-white hover:text-white/90"
-                        onClick={() =>
-                          setOpenPanel((p) =>
-                            p === "locality" ? null : "locality",
-                          )
-                        }
+                        onClick={() => menu.set((prev) => toggle(prev, name))}
+                        className={`rounded-full border px-3.5 py-2 text-xs font-medium transition-colors sm:text-[13px] ${
+                          on
+                            ? "border-gold/80 bg-gold/20 text-white ring-1 ring-gold/40"
+                            : "border-white/20 bg-white/5 text-cream/95 hover:border-white/35 hover:bg-white/10"
+                        }`}
                       >
-                        Add area
+                        {name}
                       </button>
-                    ) : (
-                      <div
-                        className="mt-0.5 flex min-w-0 flex-wrap items-center gap-1"
-                        onClick={() => setOpenPanel("locality")}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            setOpenPanel("locality");
-                          }
-                        }}
-                        role="presentation"
-                      >
-                        {Array.from(localities).map((name) => (
-                          <span
-                            key={name}
-                            className="inline-flex max-w-[5.5rem] shrink-0 items-center gap-0.5 rounded-full border border-white/25 bg-white/10 py-0.5 pl-2 pr-0.5 text-[11px] font-medium text-white"
-                            title={name}
-                          >
-                            <span className="min-w-0 truncate">
-                              {shortLocalityLabel(name)}
-                            </span>
-                            <button
-                              type="button"
-                              className="flex shrink-0 rounded-full p-0.5 text-white/70 hover:bg-white/15 hover:text-white"
-                              aria-label={`Remove ${name}`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleLocality(name);
-                              }}
-                            >
-                              <XIcon className="size-3.5" />
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    aria-expanded={openPanel === "locality"}
-                    aria-haspopup="listbox"
-                    aria-label="Open locality options"
-                    className="shrink-0 rounded-full p-1 text-white/40 transition-colors hover:bg-white/10 hover:text-white/70"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenPanel((p) => (p === "locality" ? null : "locality"));
-                    }}
-                  >
-                    <ChevronIcon
-                      className={
-                        openPanel === "locality" ? "rotate-180" : undefined
-                      }
-                    />
-                  </button>
+                    );
+                  })}
                 </div>
-
-                <div className="hidden h-10 w-px shrink-0 self-center bg-white/15 sm:block" />
-
-                <div
-                  ref={flatTriggerRef}
-                  className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-xl px-3 py-2 sm:min-h-0 sm:rounded-full sm:py-2"
-                >
-                  <HomeIcon className="shrink-0 text-gold" />
-                  <div className="min-w-0 flex-1">
-                    <span className="block text-[9px] font-semibold uppercase tracking-[0.2em] text-white/45">
-                      Flat
-                    </span>
-                    {flats.size === 0 ? (
-                      <button
-                        type="button"
-                        className="mt-0.5 block w-full truncate text-left text-sm font-medium text-white hover:text-white/90"
-                        onClick={() =>
-                          setOpenPanel((p) => (p === "flat" ? null : "flat"))
-                        }
-                      >
-                        BHK / Type
-                      </button>
-                    ) : (
-                      <div
-                        className="mt-0.5 flex min-w-0 flex-wrap items-center gap-1"
-                        onClick={() => setOpenPanel("flat")}
-                        role="presentation"
-                      >
-                        {Array.from(flats).map((name) => (
-                          <span
-                            key={name}
-                            className="inline-flex max-w-[3.75rem] shrink-0 items-center gap-0.5 rounded-full border border-white/25 bg-white/10 py-0.5 pl-2 pr-0.5 text-[11px] font-medium capitalize text-white"
-                            title={name}
-                          >
-                            <span className="min-w-0 truncate">
-                              {shortFlatLabel(name)}
-                            </span>
-                            <button
-                              type="button"
-                              className="flex shrink-0 rounded-full p-0.5 text-white/70 hover:bg-white/15 hover:text-white"
-                              aria-label={`Remove ${name}`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleFlat(name);
-                              }}
-                            >
-                              <XIcon className="size-3.5" />
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    aria-expanded={openPanel === "flat"}
-                    aria-haspopup="listbox"
-                    aria-label="Open flat options"
-                    className="shrink-0 rounded-full p-1 text-white/40 transition-colors hover:bg-white/10 hover:text-white/70"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenPanel((p) => (p === "flat" ? null : "flat"));
-                    }}
-                  >
-                    <ChevronIcon
-                      className={openPanel === "flat" ? "rotate-180" : undefined}
-                    />
-                  </button>
-                </div>
-
-                <button
-                  type="submit"
-                  className="inline-flex cursor-pointer w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-gold px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-navy sm:w-auto sm:rounded-full sm:px-5 sm:py-2.5"
-                >
-                  <SearchIconSolid className="text-navy" />
-                  Search
-                </button>
               </div>
-            </form>
-
-            {openPanel &&
-              floatBox &&
-              typeof document !== "undefined" &&
-              createPortal(
-                <div
-                  ref={floatingLayerRef}
-                  className="fixed z-[105] rounded-2xl border border-white/20 bg-navy/55 p-4 text-cream shadow-[0_24px_60px_-12px_rgba(0,0,0,0.55)] ring-1 ring-white/10 backdrop-blur-xl"
-                  style={{
-                    top: floatBox.top,
-                    left: floatBox.left,
-                    width: floatBox.width,
-                  }}
-                >
-                  {openPanel === "locality" ? (
-                    <div
-                      role="listbox"
-                      aria-label="Locality"
-                      aria-multiselectable="true"
-                    >
-                      <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-gold">
-                        Select area
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {localityLabels.map((name) => {
-                          const on = localities.has(name);
-                          return (
-                            <button
-                              key={name}
-                              type="button"
-                              role="option"
-                              aria-selected={on}
-                              onClick={() => toggleLocality(name)}
-                              className={`rounded-full border px-3.5 py-2 text-left text-xs font-medium transition-colors sm:text-[13px] ${
-                                on
-                                  ? "border-gold/80 bg-gold/20 text-white ring-1 ring-gold/40"
-                                  : "border-white/20 bg-white/5 text-cream/95 hover:border-white/35 hover:bg-white/10"
-                              }`}
-                            >
-                              {name}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ) : (
-                    <div
-                      role="listbox"
-                      aria-label="Flat type"
-                      aria-multiselectable="true"
-                    >
-                      <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-gold">
-                        BHK &amp; type
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {configLabels.map((name) => {
-                          const on = flats.has(name);
-                          return (
-                            <button
-                              key={name}
-                              type="button"
-                              role="option"
-                              aria-selected={on}
-                              onClick={() => toggleFlat(name)}
-                              className={`rounded-full border px-3.5 py-2 text-left text-xs font-medium capitalize transition-colors sm:text-[13px] ${
-                                on
-                                  ? "border-gold/80 bg-gold/20 text-white ring-1 ring-gold/40"
-                                  : "border-white/20 bg-white/5 text-cream/95 hover:border-white/35 hover:bg-white/10"
-                              }`}
-                            >
-                              {name}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>,
-                document.body,
-              )}
-          </div>
+            ) : null}
+          </form>
         </div>
       </div>
     </section>
   );
 }
 
+function SearchField({ label, placeholder, icon: Icon, summary, open, onOpen }) {
+  return (
+    <div className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-xl px-3 py-2 sm:min-h-0 sm:rounded-full sm:py-2">
+      <Icon className="shrink-0 text-gold" />
+      <button type="button" className="min-w-0 flex-1 text-left" onClick={onOpen}>
+        <span className="block text-[9px] font-semibold uppercase tracking-[0.2em] text-white/45">
+          {label}
+        </span>
+        {summary ? (
+          <span className="mt-0.5 block truncate text-sm font-medium text-gold">{summary}</span>
+        ) : (
+          <span className="mt-0.5 block truncate text-sm font-medium text-white">{placeholder}</span>
+        )}
+      </button>
+      <button
+        type="button"
+        aria-expanded={open}
+        className="shrink-0 rounded-full p-1 text-white/40 hover:bg-white/10 hover:text-white/70"
+        onClick={onOpen}
+      >
+        <ChevronIcon className={open ? "rotate-180" : ""} />
+      </button>
+    </div>
+  );
+}
+
 function PinIcon({ className }) {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-    >
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden>
       <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
       <circle cx="12" cy="10" r="3" />
     </svg>
@@ -472,75 +214,33 @@ function PinIcon({ className }) {
 
 function HomeIcon({ className }) {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-    >
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden>
       <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
       <polyline points="9 22 9 12 15 12 15 22" />
     </svg>
   );
 }
 
-function ChevronIcon({ className }) {
+function StatusIcon({ className }) {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={`shrink-0 transition-transform ${className ?? ""}`}
-      aria-hidden
-    >
-      <path d="m6 9 6 6 6-6" />
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 6v6l4 2" />
     </svg>
   );
 }
 
-function XIcon({ className }) {
+function ChevronIcon({ className }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-    >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`shrink-0 transition-transform ${className}`} aria-hidden>
+      <path d="m6 9 6 6 6-6" />
     </svg>
   );
 }
 
 function SearchIconSolid({ className }) {
   return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.25"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-    >
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" className={className} aria-hidden>
       <circle cx="11" cy="11" r="8" />
       <path d="m21 21-4.3-4.3" />
     </svg>

@@ -16,26 +16,28 @@ export default function AppContextProvider({ children }) {
   const [projectsLoading, setProjectsLoading] = useState(false);
   const [blogsLoading, setBlogsLoading] = useState(false);
   const [testimonialsLoading, setTestimonialsLoading] = useState(false);
-  const [projectFilters, setProjectFilters] = useState({
-    localities: [],
+  const [filterOptions, setFilterOptions] = useState({
+    areas: [],
     configurations: [],
+    statuses: [],
   });
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-  const getProjectFilters = useCallback(async () => {
+  const fetchFilterOptions = useCallback(async () => {
     try {
-      const { data } = await axios.get(`${backendUrl}/api/project/filters`);
-      if (data?.success && data.filters) {
-        setProjectFilters({
-          localities: data.filters.localities ?? [],
-          configurations: data.filters.configurations ?? [],
+      const { data } = await axios.get(`${backendUrl}/api/project/filter-options`);
+      if (data?.success && data.filterOptions) {
+        setFilterOptions({
+          areas: data.filterOptions.areas ?? [],
+          configurations: data.filterOptions.configurations ?? [],
+          statuses: data.filterOptions.statuses ?? [],
         });
       } else {
-        console.warn("getProjectFilters:", data?.message);
+        console.warn("fetchFilterOptions:", data?.message);
       }
     } catch (err) {
-      console.error("getProjectFilters failed:", err?.message || err);
+      console.error("fetchFilterOptions failed:", err?.message || err);
     }
   }, [backendUrl]);
 
@@ -130,7 +132,7 @@ export default function AppContextProvider({ children }) {
     let cancelled = false;
     (async () => {
       try {
-        await Promise.all([getProjectFilters(), getContactSettings()]);
+        await Promise.all([fetchFilterOptions(), getContactSettings()]);
       } finally {
         if (!cancelled) setAppLoading(false);
       }
@@ -138,7 +140,7 @@ export default function AppContextProvider({ children }) {
     return () => {
       cancelled = true;
     };
-  }, [backendUrl, getProjectFilters, getContactSettings]);
+  }, [backendUrl, fetchFilterOptions, getContactSettings]);
 
   const assetUrl = useCallback(
     (path) => {
@@ -156,7 +158,7 @@ export default function AppContextProvider({ children }) {
       testimonials,
       blogs,
       contactSettings,
-      projectFilters,
+      filterOptions,
       appLoading,
       projectsLoading,
       blogsLoading,
@@ -166,7 +168,7 @@ export default function AppContextProvider({ children }) {
       backendUrl,
       assetUrl,
       refetchProjects: getAllProjects,
-      refetchProjectFilters: getProjectFilters,
+      refetchFilterOptions: fetchFilterOptions,
       refetchTestimonials: getTestimonials,
       refetchBlogs: getBlogs,
       refetchContactSettings: getContactSettings,
@@ -176,7 +178,7 @@ export default function AppContextProvider({ children }) {
       testimonials,
       blogs,
       contactSettings,
-      projectFilters,
+      filterOptions,
       appLoading,
       projectsLoading,
       blogsLoading,
@@ -184,7 +186,7 @@ export default function AppContextProvider({ children }) {
       backendUrl,
       assetUrl,
       getAllProjects,
-      getProjectFilters,
+      fetchFilterOptions,
       getTestimonials,
       getBlogs,
       getContactSettings,

@@ -1,6 +1,5 @@
 import { useContext, useEffect, useId, useMemo, useState } from "react";
 import { AppContext } from "../context/AppContext";
-import { idToLabelMap } from "../utils/projectsFilters";
 
 function SearchIcon({ className }) {
   return (
@@ -104,12 +103,15 @@ function FilterPill({ label, selected, onClick }) {
  *   searchInput: string;
  *   onSearchInputChange: (v: string) => void;
  *   onSearchSubmit: () => void;
- *   localitySelection: string[];
- *   onToggleLocality: (id: string) => void;
- *   onClearLocality: () => void;
+ *   areaSelection: string[];
+ *   onToggleArea: (name: string) => void;
+ *   onClearAreas: () => void;
  *   configSelection: string[];
- *   onToggleConfig: (id: string) => void;
+ *   onToggleConfig: (name: string) => void;
  *   onClearConfig: () => void;
+ *   statusSelection: string[];
+ *   onToggleStatus: (name: string) => void;
+ *   onClearStatus: () => void;
  *   onClearAll: () => void;
  * }} props
  */
@@ -117,29 +119,26 @@ export default function ProjectsFilterToolbar({
   searchInput,
   onSearchInputChange,
   onSearchSubmit,
-  localitySelection,
-  onToggleLocality,
-  onClearLocality,
+  areaSelection,
+  onToggleArea,
+  onClearAreas,
   configSelection,
   onToggleConfig,
   onClearConfig,
+  statusSelection,
+  onToggleStatus,
+  onClearStatus,
   onClearAll,
 }) {
-  const { projectFilters } = useContext(AppContext) ?? {};
-  const localityOptions = projectFilters?.localities ?? [];
-  const configOptions = projectFilters?.configurations ?? [];
-
-  const localityIdToLabel = useMemo(
-    () => idToLabelMap(localityOptions),
-    [localityOptions],
-  );
-  const configIdToLabel = useMemo(
-    () => idToLabelMap(configOptions),
-    [configOptions],
-  );
+  const { filterOptions } = useContext(AppContext) ?? {};
+  const areaOptions = filterOptions?.areas ?? [];
+  const configOptions = filterOptions?.configurations ?? [];
+  const statusOptions = filterOptions?.statuses ?? [];
 
   const hasActiveFilters =
-    localitySelection.length > 0 || configSelection.length > 0;
+    areaSelection.length > 0 ||
+    configSelection.length > 0 ||
+    statusSelection.length > 0;
   const [filtersOpen, setFiltersOpen] = useState(hasActiveFilters);
   const searchFieldId = useId();
   const panelId = useId();
@@ -150,26 +149,21 @@ export default function ProjectsFilterToolbar({
 
   const activeChips = useMemo(() => {
     const chips = [];
-    for (const id of localitySelection) {
-      const label = localityIdToLabel[id];
-      if (label) chips.push({ key: `loc-${id}`, label, onRemove: () => onToggleLocality(id) });
+    for (const name of areaSelection) {
+      chips.push({ key: `area-${name}`, label: name, onRemove: () => onToggleArea(name) });
     }
-    for (const id of configSelection) {
-      const label = configIdToLabel[id];
-      if (label) chips.push({ key: `cfg-${id}`, label, onRemove: () => onToggleConfig(id) });
+    for (const name of configSelection) {
+      chips.push({ key: `cfg-${name}`, label: name, onRemove: () => onToggleConfig(name) });
+    }
+    for (const name of statusSelection) {
+      chips.push({ key: `st-${name}`, label: name, onRemove: () => onToggleStatus(name) });
     }
     return chips;
-  }, [
-    localitySelection,
-    configSelection,
-    localityIdToLabel,
-    configIdToLabel,
-    onToggleLocality,
-    onToggleConfig,
-  ]);
+  }, [areaSelection, configSelection, statusSelection, onToggleArea, onToggleConfig, onToggleStatus]);
 
-  const localityAll = localitySelection.length === 0;
+  const areasAll = areaSelection.length === 0;
   const configAll = configSelection.length === 0;
+  const statusAll = statusSelection.length === 0;
 
   return (
     <div className="flex w-full flex-col gap-3">
@@ -218,7 +212,7 @@ export default function ProjectsFilterToolbar({
           Filters
           {hasActiveFilters ? (
             <span className="flex size-5 items-center justify-center rounded-full bg-gold text-[10px] font-bold text-navy">
-              {localitySelection.length + configSelection.length}
+              {areaSelection.length + configSelection.length + statusSelection.length}
             </span>
           ) : null}
         </button>
@@ -251,23 +245,19 @@ export default function ProjectsFilterToolbar({
         }`}
       >
         <div className="rounded-2xl border-2 border-navy/[0.08] bg-white p-5 shadow-sm sm:p-6">
-          <div className="grid gap-8 md:grid-cols-2 md:gap-10">
+          <div className="grid gap-8 md:grid-cols-3 md:gap-10">
               <div>
                 <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-gold-ink">
-                  Locality
+                  Area
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <FilterPill
-                    label="All"
-                    selected={localityAll}
-                    onClick={onClearLocality}
-                  />
-                  {localityOptions.map((opt) => (
+                  <FilterPill label="All" selected={areasAll} onClick={onClearAreas} />
+                  {areaOptions.map((name) => (
                     <FilterPill
-                      key={opt.id}
-                      label={opt.label}
-                      selected={localitySelection.includes(opt.id)}
-                      onClick={() => onToggleLocality(opt.id)}
+                      key={name}
+                      label={name}
+                      selected={areaSelection.includes(name)}
+                      onClick={() => onToggleArea(name)}
                     />
                   ))}
                 </div>
@@ -278,12 +268,28 @@ export default function ProjectsFilterToolbar({
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <FilterPill label="All" selected={configAll} onClick={onClearConfig} />
-                  {configOptions.map((opt) => (
+                  {configOptions.map((name) => (
                     <FilterPill
-                      key={opt.id}
-                      label={opt.label}
-                      selected={configSelection.includes(opt.id)}
-                      onClick={() => onToggleConfig(opt.id)}
+                      key={name}
+                      label={name}
+                      selected={configSelection.includes(name)}
+                      onClick={() => onToggleConfig(name)}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-gold-ink">
+                  Status
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <FilterPill label="All" selected={statusAll} onClick={onClearStatus} />
+                  {statusOptions.map((name) => (
+                    <FilterPill
+                      key={name}
+                      label={name}
+                      selected={statusSelection.includes(name)}
+                      onClick={() => onToggleStatus(name)}
                     />
                   ))}
                 </div>
