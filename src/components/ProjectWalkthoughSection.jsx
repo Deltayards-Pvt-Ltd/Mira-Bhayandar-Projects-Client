@@ -1,9 +1,48 @@
+import { toast } from "react-toastify";
+
+function ShareIcon({ className }) {
+  return (
+    <svg
+      className={className}
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden
+    >
+      <path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z" />
+    </svg>
+  );
+}
+
 export default function ProjectWalkthoughSection({ project, assetUrl }) {
   const src = project?.walkthroughVideo
     ? assetUrl(project.walkthroughVideo)
     : "";
   if (!src) return null;
 
+  const shareVideo = async () => {
+    const title = project?.name
+      ? `${project.name} — Walkthrough`
+      : "Project walkthrough";
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, url: src });
+        return;
+      }
+      await navigator.clipboard.writeText(src);
+      toast.success("Video link copied");
+    } catch (err) {
+      if (err?.name === "AbortError") return;
+      try {
+        await navigator.clipboard.writeText(src);
+        toast.success("Video link copied");
+      } catch {
+        toast.error("Could not share video link");
+      }
+    }
+  };
   return (
     <div className="border-b border-navy/[0.08] bg-[#fdfbf7] text-navy">
       <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
@@ -44,6 +83,15 @@ export default function ProjectWalkthoughSection({ project, assetUrl }) {
               </video>
             </div>
           </div>
+          <button
+            type="button"
+            onClick={shareVideo}
+            className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-navy/80 transition hover:text-navy"
+            aria-label="Share walkthrough video"
+          >
+            <span>Share:</span>
+            <ShareIcon className="h-5 w-5 cursor-pointer text-navy/80 hover:text-navy"  />
+          </button>
         </figure>
       </div>
     </div>
