@@ -9,6 +9,7 @@ import ProjectDetailPlans from "../components/ProjectDetailPlans";
 import ProjectDetailGallery from "../components/ProjectDetailGallery";
 import ProjectDetailEnquiry from "../components/ProjectDetailEnquiry";
 import ProjectMahaReraDetails from "../components/projectMahaReraDetails";
+import ProjectWalkthoughSection from "../components/ProjectWalkthoughSection";
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -96,6 +97,7 @@ export default function ProjectDetail() {
       <ProjectDetailIntro project={project} assetUrl={assetUrl} />
       <ProjectDetailQuickFacts project={project} />
       <ProjectDetailAbout project={project} />
+      <ProjectWalkthoughSection project={project} assetUrl={assetUrl} />
       <ProjectDetailGallery project={project} assetUrl={assetUrl} />
       <ProjectDetailPlans project={project} assetUrl={assetUrl} />
       <ProjectMahaReraDetails project={project} />
