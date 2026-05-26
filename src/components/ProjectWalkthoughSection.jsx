@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 
 function ShareIcon({ className }) {
@@ -7,10 +8,18 @@ function ShareIcon({ className }) {
       width="24"
       height="24"
       viewBox="0 0 24 24"
-      fill="currentColor"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       aria-hidden
     >
-      <path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z" />
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <path d="m8.59 13.51 6.83 3.98" />
+      <path d="m15.41 6.51-6.82 3.98" />
     </svg>
   );
 }
@@ -19,6 +28,25 @@ export default function ProjectWalkthoughSection({ project, assetUrl }) {
   const src = project?.walkthroughVideo
     ? assetUrl(project.walkthroughVideo)
     : "";
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || !src) return;
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          const p = v.play();
+          if (p?.catch) p.catch(() => {});
+        }
+      },
+      { threshold: 0.25 },
+    );
+    io.observe(v);
+    return () => io.disconnect();
+  }, [src]);
+
   if (!src) return null;
 
   const shareVideo = async () => {
@@ -71,11 +99,13 @@ export default function ProjectWalkthoughSection({ project, assetUrl }) {
           <div className="overflow-hidden rounded-2xl border-2 border-navy/[0.08] bg-white shadow-[0_8px_28px_-12px_rgba(10,22,40,0.12),0_20px_50px_-24px_rgba(10,22,40,0.16)] ring-1 ring-navy/[0.04]">
             <div className="relative aspect-video w-full overflow-hidden bg-navy/[0.04]">
               <video
+                ref={videoRef}
                 className="absolute inset-0 h-full w-full object-cover"
                 autoPlay
-                muted
+                
                 loop
                 playsInline
+                controls
                 preload="metadata"
                 aria-label="Project walkthrough video"
               >
