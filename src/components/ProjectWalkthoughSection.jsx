@@ -86,7 +86,7 @@ export default function ProjectWalkthoughSection({ project, assetUrl }) {
           className="mt-2 text-3xl font-normal tracking-tight text-navy sm:text-4xl"
           style={{ fontFamily: "var(--font-heading)" }}
         >
-          Fatsen Your Seatbelts!
+          Fasten Your Seatbelts!
         </h2>
 
         <div className="mt-6 space-y-2 text-center text-gray-600">
