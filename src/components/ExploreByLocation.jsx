@@ -2,19 +2,19 @@ import { Link } from "react-router-dom";
 
 const locations = [
   {
-    to: "/projects?locality=bhayandar-east",
+    to: "/projects?area=Bhayandar+East",
     img: "/bhayandar east.png",
     alt: "Bhayandar East",
     name: "Bhayandar East",
   },
   {
-    to: "/projects?locality=bhayandar-west",
+    to: "/projects?area=Bhayandar+West",
     img: "/bhayandar west.png",
     alt: "Bhayandar West",
     name: "Bhayandar West",
   },
   {
-    to: "/projects?locality=mira-road",
+    to: "/projects?area=Mira+Road",
     img: "/mira road east.png",
     alt: "Mira Road",
     name: "Mira Road",

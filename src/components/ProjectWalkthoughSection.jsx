@@ -24,6 +24,7 @@ function ShareIcon({ className }) {
   );
 }
 
+// no link of the assest , we need to share our page link onlu
 export default function ProjectWalkthoughSection({ project, assetUrl }) {
   const src = project?.walkthroughVideo
     ? assetUrl(project.walkthroughVideo)
@@ -55,19 +56,21 @@ export default function ProjectWalkthoughSection({ project, assetUrl }) {
       : "Project walkthrough";
 
     try {
+      console.log(window.location.href);
       if (navigator.share) {
-        await navigator.share({ title, url: src });
+        await navigator.share({ title, url: window.location.href });
         return;
       }
-      await navigator.clipboard.writeText(src);
-      toast.success("Video link copied");
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success("link copied");
     } catch (err) {
       if (err?.name === "AbortError") return;
       try {
-        await navigator.clipboard.writeText(src);
-        toast.success("Video link copied");
+        console.log(window.location.href);
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success("link copied");
       } catch {
-        toast.error("Could not share video link");
+        toast.error("Could not share  link");
       }
     }
   };
@@ -83,15 +86,15 @@ export default function ProjectWalkthoughSection({ project, assetUrl }) {
           className="mt-2 text-3xl font-normal tracking-tight text-navy sm:text-4xl"
           style={{ fontFamily: "var(--font-heading)" }}
         >
-          Experience
+          Fatsen Your Seatbelts!
         </h2>
 
         <div className="mt-6 space-y-2 text-center text-gray-600">
           <p className="text-xl font-semibold sm:text-2xl text-navy/78">
-            Experience The Project
+            See It Before You Live It
           </p>
           <p className="text-base sm:text-lg">
-            Take a walkthrough and explore every detail
+            Come take a quick virtual tour of the lifestyle waiting for you
           </p>
         </div>
 
@@ -102,7 +105,6 @@ export default function ProjectWalkthoughSection({ project, assetUrl }) {
                 ref={videoRef}
                 className="absolute inset-0 h-full w-full object-cover"
                 autoPlay
-                
                 loop
                 playsInline
                 controls
@@ -120,7 +122,7 @@ export default function ProjectWalkthoughSection({ project, assetUrl }) {
             aria-label="Share walkthrough video"
           >
             <span>Share:</span>
-            <ShareIcon className="h-5 w-5 cursor-pointer text-navy/80 hover:text-navy"  />
+            <ShareIcon className="h-5 w-5 cursor-pointer text-navy/80 hover:text-navy" />
           </button>
         </figure>
       </div>

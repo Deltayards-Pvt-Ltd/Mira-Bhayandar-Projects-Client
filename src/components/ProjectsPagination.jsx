@@ -104,4 +104,4 @@ export default function ProjectsPagination({
   );
 }
 
-export const DEFAULT_PROJECTS_LIMIT = 10;
+export const DEFAULT_PROJECTS_LIMIT = 12;
