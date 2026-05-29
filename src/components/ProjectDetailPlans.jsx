@@ -76,9 +76,20 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
-  const brochureHref = project?.browcherPdf
-    ? assetUrl(String(project.browcherPdf).trim())
-    : "";
+  const brochures = useMemo(() => {
+    const raw = project?.browcherPdf;
+    if (!raw) return [];
+    if (typeof raw === "string" && raw.trim()) {
+      return [{ title: "Brochure", href: assetUrl(raw.trim()) }];
+    }
+    if (!Array.isArray(raw)) return [];
+    return raw
+      .filter((b) => b?.file)
+      .map((b) => ({
+        title: String(b.title || "Brochure").trim() || "Brochure",
+        href: assetUrl(String(b.file).trim()),
+      }));
+  }, [project?.browcherPdf, assetUrl]);
 
   useEffect(() => {
     setIdx((i) => (layouts.length ? Math.min(i, layouts.length - 1) : 0));
@@ -396,16 +407,35 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
           <p className="mt-5 text-sm text-white/50">No floor plan images for this layout.</p>
         )}
 
-        {brochureHref ? (
+        {brochures.length === 1 ? (
           <a
-            href={brochureHref}
+            href={brochures[0].href}
             target="_blank"
             rel="noopener noreferrer"
-            className="group mt-5 inline-flex items-center gap-2.5 text-sm font-semibold uppercase tracking-[0.14em] text-gold-light hover:text-gold sm:mt-6"
+            className="group mt-5 inline-flex items-center gap-2.5 text-sm font-semibold uppercase tracking-[0.14em] text-gold-light transition hover:text-gold sm:mt-6"
           >
             <DownloadIcon className="text-gold group-hover:text-gold-light" />
             Download full brochure (PDF)
           </a>
+        ) : brochures.length > 1 ? (
+          <ul
+            className="mt-5 flex flex-col gap-3 sm:mt-6 md:flex-row md:flex-wrap md:gap-x-8 md:gap-y-3"
+            role="list"
+          >
+            {brochures.map((b, i) => (
+              <li key={`${b.title}-${i}`} className="min-w-0 md:shrink-0">
+                <a
+                  href={b.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex max-w-full items-center gap-2.5 whitespace-nowrap text-sm font-semibold uppercase text-gold-light transition hover:text-gold"
+                >
+                  <DownloadIcon className="shrink-0 text-gold group-hover:text-gold-light" />
+                  Download {b.title} Brochure (PDF)
+                </a>
+              </li>
+            ))}
+          </ul>
         ) : null}
       </div>
 
