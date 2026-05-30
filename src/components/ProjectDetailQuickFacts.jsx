@@ -1,3 +1,5 @@
+import { formatPlans } from "../utils/projectPlans";
+
 function ClipboardIcon({ className }) {
   return (
     <svg
@@ -16,19 +18,6 @@ function ClipboardIcon({ className }) {
       <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
     </svg>
   );
-}
-
-function formatLayoutTitles(layouts) {
-  const seen = new Set();
-  const out = [];
-  for (const l of layouts || []) {
-    const t = (l?.title || "").trim();
-    if (t && !seen.has(t)) {
-      seen.add(t);
-      out.push(t);
-    }
-  }
-  return out.length ? out.join(" – ") : "";
 }
 
 function formatPossessionShort(reraPossession) {
@@ -55,7 +44,7 @@ export default function ProjectDetailQuickFacts({ project }) {
   const possession = formatPossessionShort(project?.reraPossession);
   const status = String(project?.status || "").trim();
   const propertyType = String(project?.propertyType || "").trim();
-  const configurations = formatLayoutTitles(project?.layouts);
+  const configurations = formatPlans(project?.plans, " – ");
 
   const rows = [
     { label: "Developer", value: builder },

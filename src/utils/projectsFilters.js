@@ -39,8 +39,8 @@ export function filterProjects(
     }
 
     if (configurations.length) {
-      const titles = (p.layouts || []).map((l) => String(l?.title || "").trim());
-      if (!configurations.some((c) => titles.includes(c))) return false;
+      const plans = (p.plans || []).map((t) => String(t || "").trim());
+      if (!configurations.some((c) => plans.includes(c))) return false;
     }
 
     return true;

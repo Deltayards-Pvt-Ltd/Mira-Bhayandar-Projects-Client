@@ -23,6 +23,29 @@ function SendIcon({ className }) {
   );
 }
 
+function ShareIcon({ className }) {
+  return (
+    <svg
+      className={className}
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <path d="m8.59 13.51 6.83 3.98" />
+      <path d="M15.41 6.51l-6.82 3.98" />
+    </svg>
+  );
+}
+
 function MapPinIcon({ className }) {
   return (
     <svg
@@ -60,6 +83,8 @@ function mapsSearchUrl(query) {
 
 /**
  * @param {{ project: Record<string, unknown> }} props
+ * 
+ *
  */
 export default function ProjectDetailEnquiry({ project }) {
   const { backendUrl } = useContext(AppContext) ?? {};
@@ -78,6 +103,29 @@ export default function ProjectDetailEnquiry({ project }) {
     () => `I'm interested in ${projectName}.${locationText ? ` Location: ${locationText}.` : ""}`,
   );
   const [submitting, setSubmitting] = useState(false);
+
+  const locationShareUrl = mapsSearchUrl(`${projectName} ${locationText}`.trim());
+
+  async function shareLocationLink() {
+    const title = project?.name ? `${project.name} — Location` : "Project location";
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, url: locationShareUrl });
+        return;
+      }
+      await navigator.clipboard.writeText(locationShareUrl);
+      toast.success("Location link copied");
+    } catch (err) {
+      if (err?.name === "AbortError") return;
+      try {
+        await navigator.clipboard.writeText(locationShareUrl);
+        toast.success("Location link copied");
+      } catch {
+        toast.error("Could not share location link");
+      }
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -231,14 +279,14 @@ export default function ProjectDetailEnquiry({ project }) {
             </form>
           </div>
 
-          <div className="min-h-[280px] lg:min-h-[420px]">
+          <div className="flex min-h-[280px] flex-col lg:min-h-[420px]">
             <div className="mb-3 flex items-center justify-between gap-3">
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gold-ink">
                 Location
               </p>
               {embedSrc ? (
                 <a
-                  href={mapsSearchUrl(`${projectName} ${locationText}`.trim())}
+                  href={locationShareUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[11px] font-semibold uppercase tracking-[0.12em] text-navy/55 transition-colors hover:text-gold-dark"
@@ -264,21 +312,20 @@ export default function ProjectDetailEnquiry({ project }) {
                   <MapPinIcon className="h-9 w-9" />
                 </span>
                 <p className="max-w-sm text-sm leading-relaxed text-navy/65">
-                  Add <strong className="font-semibold text-navy/85">latitude</strong> and{" "}
-                  <strong className="font-semibold text-navy/85">longitude</strong> on this project
-                  in the admin panel to show an embedded map here. Values are WGS84 decimals (e.g.
-                  19.28, 72.85).
+                  Location still to be added
                 </p>
-                <a
-                  href={mapsSearchUrl(locationText || projectName)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex rounded-full border-2 border-navy bg-navy px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-cream transition-colors hover:bg-navy-light"
-                >
-                  Search area in Google Maps
-                </a>
               </div>
             )}
+            <div className="mt-5 flex flex-wrap items-center md:justify-start justify-center gap-4">
+              <button
+                type="button"
+                onClick={shareLocationLink}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-gold px-8 py-3.5 font-sans text-xs font-bold uppercase tracking-[0.12em] text-navy shadow-sm transition hover:bg-gold-light enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 md:text-[13px]"
+                >
+                Share location link
+                <ShareIcon className="text-navy" />
+              </button>
+            </div>
           </div>
         </div>
       </div>

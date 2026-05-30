@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
+import { AppContext } from "../context/AppContext";
 
 function ShareIcon({ className }) {
   return (
@@ -23,12 +24,32 @@ function ShareIcon({ className }) {
     </svg>
   );
 }
+function DownloadIcon({ className }) {
+  return (
+    <svg
+      className={className}
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" x2="12" y1="15" y2="3" />
+    </svg>
+  );
+}
 
 // no link of the assest , we need to share our page link onlu
 export default function ProjectWalkthoughSection({ project, assetUrl }) {
-  const src = project?.walkthroughVideo
-    ? assetUrl(project.walkthroughVideo)
-    : "";
+  const backendUrl = useContext(AppContext)?.backendUrl ?? "";
+  const videoPath = String(project?.walkthroughVideo || "").trim();
+  const src = videoPath ? assetUrl(videoPath) : "";
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -40,6 +61,8 @@ export default function ProjectWalkthoughSection({ project, assetUrl }) {
         if (entry.isIntersecting) {
           const p = v.play();
           if (p?.catch) p.catch(() => {});
+        } else {
+          v.pause();
         }
       },
       { threshold: 0.25 },
@@ -49,6 +72,23 @@ export default function ProjectWalkthoughSection({ project, assetUrl }) {
   }, [src]);
 
   if (!src) return null;
+
+  const downloadVideo = () => {
+    const url = /^https?:\/\//i.test(videoPath)
+      ? videoPath
+      : videoPath.replace(/^\/+/, "");
+    const ext = videoPath.match(/\.(mp4|webm|mov|mkv)$/i)?.[0] || ".mp4";
+    const params = new URLSearchParams({
+      url,
+      filename: `${project.name}-walkthrough${ext}`,
+    });
+
+    const iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+    iframe.src = `${backendUrl}/api/project/download-asset?${params}`;
+    document.body.appendChild(iframe);
+    setTimeout(() => iframe.remove(), 120000);
+  };
 
   const shareVideo = async () => {
     const title = project?.name
@@ -104,8 +144,8 @@ export default function ProjectWalkthoughSection({ project, assetUrl }) {
               <video
                 ref={videoRef}
                 className="absolute inset-0 h-full w-full object-cover"
-                autoPlay
                 loop
+                
                 playsInline
                 controls
                 preload="metadata"
@@ -115,15 +155,26 @@ export default function ProjectWalkthoughSection({ project, assetUrl }) {
               </video>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={shareVideo}
-            className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-navy/80 transition hover:text-navy"
-            aria-label="Share walkthrough video"
-          >
-            <span>Share:</span>
-            <ShareIcon className="h-5 w-5 cursor-pointer text-navy/80 hover:text-navy" />
-          </button>
+          <div className="mt-3 flex flex-wrap items-center gap-4">
+            <button
+              type="button"
+              onClick={shareVideo}
+              className="inline-flex items-center gap-2 text-sm font-medium text-navy/80 transition hover:text-navy"
+              aria-label="Share walkthrough video"
+            >
+              <span>Share:</span>
+              <ShareIcon className="h-5 w-5 cursor-pointer text-navy/80 hover:text-navy" />
+            </button>
+            <button
+              type="button"
+              onClick={downloadVideo}
+              className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.12em] text-navy transition hover:text-gold-light"
+              aria-label="Download walkthrough video"
+            >
+              <DownloadIcon className="h-5 w-5" />
+              <span>Download Video</span>
+            </button>
+          </div>
         </figure>
       </div>
     </div>

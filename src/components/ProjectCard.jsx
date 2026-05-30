@@ -1,47 +1,13 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-
-function layoutAreaNums(layout) {
-  const a = layout?.area;
-  if (a === undefined || a === null || a === "") return [];
-  const s = String(a).trim();
-  const single = Number(s);
-  if (Number.isFinite(single) && /^\d+(\.\d+)?$/.test(s)) return [single];
-  const matches = s.match(/\d+(?:\.\d+)?/g);
-  if (!matches) return [];
-  return matches.map(Number).filter((n) => Number.isFinite(n));
-}
+import { formatPlans } from "../utils/projectPlans";
 
 function layoutPriceNum(layout) {
   const p = layout?.price;
   if (p === undefined || p === null || p === "") return null;
   const n = Number(p);
   return Number.isFinite(n) ? n : null;
-}
-
-/** Unique layout titles in order, for "1 BHK · 2 BHK". */
-function formatLayoutTitles(layouts) {
-  const seen = new Set();
-  const out = [];
-  for (const l of layouts || []) {
-    const t = (l?.title || "").trim();
-    if (t && !seen.has(t)) {
-      seen.add(t);
-      out.push(t);
-    }
-  }
-  return out;
-}
-
-/** Min–max sqft from numeric layout areas; single layout → one number. */
-function formatAreaRange(layouts) {
-  const nums = (layouts || []).flatMap(layoutAreaNums);
-  if (nums.length === 0) return "";
-  const lo = Math.min(...nums);
-  const hi = Math.max(...nums);
-  if (lo === hi) return `${lo} sqft`;
-  return `${lo} - ${hi} sqft`;
 }
 
 /** Min–max price in Lacs from layout prices. */
@@ -164,6 +130,7 @@ export default function ProjectCard({ project, assetUrl, compact = false }) {
   const showVideo = Boolean(coverVideo) && !videoFailed;
   const poster = coverImage ? assetUrl(coverImage) : undefined;
   const imgSrc = coverImage ? assetUrl(coverImage) : "";
+  const builderLogoSrc = project?.builderLogo ? assetUrl(project.builderLogo) : "";
 
   useEffect(() => {
     const v = videoRef.current;
@@ -185,9 +152,7 @@ export default function ProjectCard({ project, assetUrl, compact = false }) {
   const name = project?.name || "Project";
   const builder = (project?.builder || "").trim();
   const layouts = project?.layouts;
-  const titles = formatLayoutTitles(layouts);
-  const layoutLine = titles.join(" · ");
-  const areaLine = formatAreaRange(layouts);
+  const plansLine = formatPlans(project?.plans);
   const priceLine = formatPriceRange(layouts);
 
   const id = project?._id != null ? String(project._id) : "";
@@ -262,17 +227,28 @@ export default function ProjectCard({ project, assetUrl, compact = false }) {
       <div
         className={`flex flex-1 flex-col px-5 sm:px-6 ${compact ? "pb-5 pt-5 sm:pb-5 sm:pt-5" : "pb-5 pt-5 sm:pb-6 sm:pt-6"}`}
       >
-        <div className="flex min-w-0 items-baseline justify-between gap-3">
+        <div className="flex min-w-0 items-center justify-between gap-4">
           <h3
-            className="min-w-0 flex-1 truncate text-[1.65rem] font-normal leading-[1.15] tracking-tight text-navy sm:text-[1.85rem]"
+            className="min-w-0 flex-1 line-clamp-2 text-[1.5rem] font-normal leading-[1.12] tracking-tight text-navy sm:text-[1.75rem]"
             style={{ fontFamily: "var(--font-heading)" }}
           >
             {name}
           </h3>
-          {!compact && builder ? (
-            <p className="max-w-[42%] shrink-0 text-right text-[11px] font-semibold uppercase leading-snug tracking-[0.14em] text-gold-ink/90 sm:text-xs">
-              By {builder}
-            </p>
+          {!compact && (builder || builderLogoSrc) ? (
+            builderLogoSrc ? (
+              <img
+                src={builderLogoSrc}
+                alt={builder || "Developer logo"}
+                // title={builder || undefined}
+                className="h-12 w-auto max-w-[8.5rem] shrink-0 object-contain object-right sm:h-14 sm:max-w-[9.5rem] "
+                loading="lazy"
+                decoding="async"
+              />
+            ) : (
+              <p className="max-w-[38%] shrink-0 text-right text-[10px] font-semibold uppercase leading-snug tracking-[0.14em] text-gold-ink/90 sm:max-w-[42%] sm:text-[11px]">
+                By {builder}
+              </p>
+            )
           ) : null}
         </div>
 
@@ -280,16 +256,15 @@ export default function ProjectCard({ project, assetUrl, compact = false }) {
           <>
             <div className="my-3.5 border-t border-navy/[0.1]" aria-hidden />
 
-            {layoutLine || areaLine || priceLine ? (
+            {plansLine || priceLine ? (
               <p className="mb-0 min-h-[1.35rem] text-sm leading-relaxed text-navy/75">
                 {[
-                  layoutLine && {
-                    key: "layout",
+                  plansLine && {
+                    key: "plans",
                     node: (
-                      <span className="font-medium tracking-tight">{layoutLine}</span>
+                      <span className="font-medium tracking-tight">{plansLine}</span>
                     ),
                   },
-                  areaLine && { key: "area", node: <span>{areaLine}</span> },
                   priceLine && { key: "price", node: <span>{priceLine}</span> },
                 ]
                   .filter(Boolean)

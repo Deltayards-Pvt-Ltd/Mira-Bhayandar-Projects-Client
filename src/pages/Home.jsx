@@ -19,17 +19,19 @@ export default function Home() {
   useEffect(() => {
     if (!backendUrl) return;
     refetchTestimonials?.();
-    refetchBlogs?.();
+    refetchBlogs?.(); 
   }, [backendUrl, refetchTestimonials, refetchBlogs]);
 
   return (
     <>
       <HeroCarousel />
       <Storytelling />
-      <ArchitecturalVision />
+      <ExploreByLocation />
+
       <FeaturedProjects />
       <WhyMiraBhayandar />
-      <ExploreByLocation />
+      <ArchitecturalVision />
+
       <MiniAbout />
       <Testimonials />
       <LatestUpdates />

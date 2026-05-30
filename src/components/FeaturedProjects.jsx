@@ -23,7 +23,7 @@ function ArrowRightIcon() {
   );
 }
 
-const FEATURED_COUNT = 3;
+// const FEATURED_COUNT = 3;
 
 export default function FeaturedProjects() {
   const { backendUrl, assetUrl: ctxAssetUrl, appLoading } = useContext(AppContext) ?? {};
@@ -41,7 +41,7 @@ export default function FeaturedProjects() {
     (async () => {
       try {
         const { data } = await axios.get(
-          `${backendUrl}/api/project/featured?limit=${FEATURED_COUNT}`,
+          `${backendUrl}/api/project/featured`,
         );
         if (cancelled) return;
         if (data?.success) {

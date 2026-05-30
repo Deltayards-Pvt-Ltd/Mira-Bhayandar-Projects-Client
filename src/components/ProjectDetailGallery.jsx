@@ -1,5 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
+import axios from "axios";
+import { downloadZip } from "client-zip";
+import { AppContext } from "../context/AppContext";
 
 function ChevronLeft({ className }) {
   return (
@@ -59,6 +62,28 @@ function CloseIcon({ className }) {
   );
 }
 
+// download icon
+function DownloadIcon({ className }) {
+  return (
+    <svg
+      className={className}
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" x2="12" y1="15" y2="3" />
+    </svg>
+  );
+}
+
 /**
  * @param {{
  *   project: Record<string, unknown>;
@@ -66,6 +91,8 @@ function CloseIcon({ className }) {
  * }} props
  */
 export default function ProjectDetailGallery({ project, assetUrl }) {
+  const backendUrl = useContext(AppContext)?.backendUrl ?? "";
+
   const items = useMemo(() => {
     const raw = project?.galleryImages;
     if (!Array.isArray(raw)) return [];
@@ -76,6 +103,34 @@ export default function ProjectDetailGallery({ project, assetUrl }) {
       }))
       .filter((g) => g.src);
   }, [project?.galleryImages]);
+
+  const downloadImages = async () => {
+    const files = await Promise.all(
+      items.map(async (item) => {
+        const url = item.src;
+        const { data } = await axios.get(
+          `${backendUrl}/api/project/download-asset`,
+          {
+            params: { url },
+            responseType: "blob",
+          },
+        );
+        const ext = ".jpg";
+        return {
+          name: `${project.name}/${item.title}${ext}`,
+          input: data,
+        };
+      }),
+    );
+
+    const blob = await downloadZip(files).blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${project.name}-gallery.zip`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIdx, setLightboxIdx] = useState(0);
@@ -237,6 +292,17 @@ export default function ProjectDetailGallery({ project, assetUrl }) {
             </li>
           ))}
         </ul>
+        <div>
+          <div
+            className="flex items-center gap-2 text-navy  mt-4 md:mt-6 cursor-pointer hover:text-gold-light transition-colors duration-200"
+            onClick={downloadImages}
+          >
+            <DownloadIcon />
+            <span className="text-sm font-semibold uppercase tracking-[0.12em] ">
+              Download Images
+            </span>
+          </div>
+        </div>
       </div>
 
       {typeof document !== "undefined" && lightbox
