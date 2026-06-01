@@ -58,9 +58,9 @@ export default function HeroCarousel() {
   }
 
   return (
-    <section className="relative z-20 min-h-[100dvh] w-full overflow-x-hidden bg-navy">
+    <section className="relative z-20 min-h-[100dvh] w-full max-w-full overflow-hidden bg-navy">
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 animate-kenburns">
+        <div className="absolute inset-0 overflow-hidden animate-kenburns">
           {!videoFailed ? (
             <video
               autoPlay

@@ -28,10 +28,14 @@ function ArrowRightIcon() {
 export default function FeaturedProjects() {
   const { backendUrl, assetUrl: ctxAssetUrl, appLoading } = useContext(AppContext) ?? {};
   const assetUrl = ctxAssetUrl ?? ((p) => p ?? "");
-  const [sectionRef, visible] = useReveal();
+  const [sectionRef, visible] = useReveal({
+    threshold: 0.05,
+    rootMargin: "0px",
+  });
   const [featured, setFeatured] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const limit = 6;
 
   useEffect(() => {
     if (appLoading || !backendUrl) return;
@@ -42,10 +46,15 @@ export default function FeaturedProjects() {
       try {
         const { data } = await axios.get(
           `${backendUrl}/api/project/featured`,
+          {
+            params: {
+              limit,
+            },
+          },
         );
         if (cancelled) return;
         if (data?.success) {
-          setFeatured(data.featuredProjects ?? []);
+          setFeatured((data.featuredProjects ?? []).slice(0, limit));
         } else {
           setFeatured([]);
           setError(data?.message || "Could not load featured projects.");
@@ -67,23 +76,30 @@ export default function FeaturedProjects() {
 
   const [revealChildren, setRevealChildren] = useState(false);
   useLayoutEffect(() => {
-    if (!showGrid || !visible) {
+    if (!showGrid) {
       setRevealChildren(false);
       return undefined;
     }
-    setRevealChildren(false);
     let cancelled = false;
+    const reveal = () => {
+      if (!cancelled) setRevealChildren(true);
+    };
+    // Double rAF so opacity transition runs; fallback if IO threshold never fires (common on tall desktop sections).
     let raf1 = 0;
     let raf2 = 0;
-    raf1 = requestAnimationFrame(() => {
-      raf2 = requestAnimationFrame(() => {
-        if (!cancelled) setRevealChildren(true);
+    let fallbackId = 0;
+    if (visible) {
+      raf1 = requestAnimationFrame(() => {
+        raf2 = requestAnimationFrame(reveal);
       });
-    });
+    } else {
+      fallbackId = window.setTimeout(reveal, 120);
+    }
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf1);
       cancelAnimationFrame(raf2);
+      clearTimeout(fallbackId);
     };
   }, [showGrid, visible]);
 

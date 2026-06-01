@@ -6,7 +6,7 @@ export default function ArchitecturalVision() {
   return (
     <section
       ref={ref}
-      className="bg-white py-16 md:py-24"
+      className="overflow-x-hidden bg-white py-16 md:py-24"
       aria-labelledby="arch-vision-heading"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -36,7 +36,7 @@ export default function ArchitecturalVision() {
           </div>
 
           <div
-            className={`arch-vision-text lg:col-span-2 ${
+            className={`arch-vision-text min-w-0 overflow-hidden lg:col-span-2 ${
               visible ? "is-visible" : ""
             }`}
           >

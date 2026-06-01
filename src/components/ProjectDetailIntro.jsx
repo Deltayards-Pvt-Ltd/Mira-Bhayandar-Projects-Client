@@ -54,10 +54,6 @@ function WhatsAppIcon({ className }) {
   );
 }   
 
-function buildWhatsAppHref(contactNumber) {
-  return `https://wa.me/91${contactNumber.replace(/\s/g, "")}`;
-}
-
 function formatConfigDisplay(plans) {
   return formatPlans(plans, " | ") || "";
 }
@@ -96,13 +92,16 @@ export default function ProjectDetailIntro({ project, assetUrl }) {
   const configLine = formatConfigDisplay(project?.plans);
   const reraNo = String(project?.reraNo || "").trim();
   const contactNumber = String(project?.contactNumber || "").trim();
+  const mobile = contactNumber.replace(/\D/g, "").replace(/^91/, "");
+  const telHref = mobile ? `tel:+91${mobile}` : "";
+  const whatsAppHref = mobile
+    ? `https://wa.me/91${mobile}?text=${encodeURIComponent(
+        `Hi, I'm interested in ${name}. Please share more details.`,
+      )}`
+    : "";
   const bannerImage = String(project?.bannerImage || "").trim();
   const bannerUrl = bannerImage ? assetUrl(bannerImage) : "";
   const statusBadge = getStatusBadge(project?.status);
-  
-  const telHref = contactNumber
-    ? `tel:${contactNumber.replace(/\s/g, "")}`
-    : "";
 
   return (
     <section className="relative overflow-hidden border-b border-white/10 text-cream">
@@ -146,7 +145,7 @@ export default function ProjectDetailIntro({ project, assetUrl }) {
 
           <div className="my-8 space-y-4 border-t border-white/10 pt-8">
             {/* Line 1: configurations + RERA */}
-            <div className="-mx-1 flex items-end gap-x-6 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="-mx-1 flex max-w-full items-end gap-x-6 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <div className="shrink-0">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gold">
                   Configurations
@@ -188,23 +187,23 @@ export default function ProjectDetailIntro({ project, assetUrl }) {
             ) : null}
           </div>
 
-          {telHref ? (
-            <div className="mb-8 flex gap-2">
+          {contactNumber ? (
+            <div className="mb-8 flex max-w-full flex-wrap gap-2">
               <a
                 href={telHref}
-                className="inline-flex items-center gap-2 rounded-full border-2 border-white/35 bg-transparent px-5 py-2.5 text-[8px] md:text-[11px] font-semibold uppercase tracking-[0.14em] text-cream transition-colors hover:border-gold hover:bg-white/5"
+                className="inline-flex max-w-full items-center gap-2 rounded-full border-2 border-white/35 bg-transparent px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-cream transition-colors hover:border-gold hover:bg-white/5 sm:px-5 sm:text-[11px] sm:tracking-[0.14em]"
               >
                 <PhoneIcon className="text-gold-light" />
                 {contactNumber}
               </a>
               <a
-                href={buildWhatsAppHref(contactNumber)}
+                href={whatsAppHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border-2 border-white/35 bg-transparent px-5 py-2.5 text-[8px] md:text-[11px] font-semibold uppercase tracking-[0.14em] text-cream transition-colors hover:border-gold hover:bg-white/5"
+                className="inline-flex max-w-full items-center gap-2 rounded-full border-2 border-white/35 bg-transparent px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-cream transition-colors hover:border-gold hover:bg-white/5 sm:px-5 sm:text-[11px] sm:tracking-[0.14em]"
               >
                 <WhatsAppIcon className="text-gold-light" />
-                {contactNumber}
+                WhatsApp
               </a>
             </div>
           ) : null}

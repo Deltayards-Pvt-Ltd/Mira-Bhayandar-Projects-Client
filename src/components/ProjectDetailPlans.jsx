@@ -280,7 +280,7 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
 
   return (
     <section
-      className="noise-overlay relative border-b border-white/10 bg-navy-gradient text-cream"
+      className="noise-overlay relative overflow-x-hidden border-b border-white/10 bg-navy-gradient text-cream"
       aria-labelledby="project-plans-heading"
     >
       <div
@@ -291,7 +291,7 @@ export default function ProjectDetailPlans({ project, assetUrl }) {
             "radial-gradient(ellipse 80% 55% at 50% -10%, rgba(212,168,83,0.08) 0%, transparent 55%)",
         }}
       />
-      <div className="relative z-[2] mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-14">
+      <div className="relative z-[2] mx-auto max-w-6xl overflow-x-hidden px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-14">
         <header className="max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-light">
             Floor plans
