@@ -12,6 +12,7 @@ import LatestUpdates from "../components/LatestUpdates";
 import DreamHomeCta from "../components/DreamHomeCta";
 import ContactSection from "../components/ContactSection";
 import BackToTop from "../components/BackToTop";
+import Partners from "../components/Partners";
 
 export default function Home() {
   const { backendUrl, refetchTestimonials, refetchBlogs } = useContext(AppContext) ?? {};
@@ -27,7 +28,7 @@ export default function Home() {
       <HeroCarousel />
       <Storytelling />
       <ExploreByLocation />
-
+      <Partners />
       <FeaturedProjects />
       <WhyMiraBhayandar />
       <ArchitecturalVision />
