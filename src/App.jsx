@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import AppContextProvider from "./context/AppContext";
 import { AppLayout } from "./components/AppLayout";
@@ -12,7 +12,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 export default function App() {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <ScrollToTop />
       <AppContextProvider>
         <div className="flex min-h-full flex-1 flex-col">
@@ -36,6 +36,6 @@ export default function App() {
           </Routes>
         </div>
       </AppContextProvider>
-    </HashRouter>
+    </BrowserRouter>
   );
 }

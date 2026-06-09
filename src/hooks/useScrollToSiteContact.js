@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-/** HashRouter: scroll to home contact section (id site-contact). */
+/** Navigate home and scroll to contact section (id site-contact). */
 export function useScrollToSiteContact() {
   const navigate = useNavigate();
   const location = useLocation();
