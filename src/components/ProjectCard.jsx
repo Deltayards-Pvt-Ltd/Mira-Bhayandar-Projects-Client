@@ -2,6 +2,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { formatPlans } from "../utils/projectPlans";
+import { projectDetailPath } from "../utils/projectSlug";
 
 function layoutPriceNum(layout) {
   const p = layout?.price;
@@ -201,7 +202,7 @@ export default function ProjectCard({ project, assetUrl, compact = false }) {
 
   console.log("phonep",phone);
 
-  const id = project?._id != null ? String(project._id) : "";
+  const detailPath = projectDetailPath(project);
   const statusBadge = getStatusBadge(
     typeof project?.status === "string" ? project.status : "",
   );
@@ -212,7 +213,7 @@ export default function ProjectCard({ project, assetUrl, compact = false }) {
       className="group cursor-pointer flex h-full flex-col overflow-hidden rounded-2xl border border-navy/12 bg-white text-navy shadow-[0_2px_6px_rgba(10,22,40,0.09),0_14px_44px_-4px_rgba(10,22,40,0.18)] transition-[border-color,box-shadow] duration-300 hover:border-gold/55 hover:shadow-[0_4px_10px_rgba(10,22,40,0.1),0_24px_56px_-6px_rgba(10,22,40,0.22)]"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onClick={() => navigate(`/projects/${id}`)}
+      onClick={() => navigate(detailPath)}
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-navy/5">
         {showVideo ? (
@@ -361,7 +362,7 @@ export default function ProjectCard({ project, assetUrl, compact = false }) {
                   </div>
                 )}
                 <Link
-                  to={id ? `/projects/${id}` : "/projects"}
+                  to={detailPath}
                   className="relative ml-auto inline-flex min-h-[44px] shrink-0 items-center justify-end"
                   aria-label={`View project: ${name}`}
                 >

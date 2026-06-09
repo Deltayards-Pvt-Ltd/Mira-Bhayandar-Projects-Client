@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { AppContext } from "../context/AppContext";
 import ProjectDetailIntro from "../components/ProjectDetailIntro";
@@ -12,7 +12,8 @@ import ProjectMahaReraDetails from "../components/projectMahaReraDetails";
 import ProjectWalkthoughSection from "../components/ProjectWalkthoughSection";
 
 export default function ProjectDetail() {
-  const { id } = useParams();
+  const { slug } = useParams();
+  const navigate = useNavigate();
   const ctx = useContext(AppContext);
   const backendUrl = ctx?.backendUrl ?? "";
   const assetUrl = ctx?.assetUrl ?? ((p) => p ?? "");
@@ -22,10 +23,10 @@ export default function ProjectDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!id || !backendUrl) {
+    if (!slug || !backendUrl) {
       setLoading(false);
       if (!backendUrl) setError("");
-      else setError("Missing project id.");
+      else setError("Missing project link.");
       setProject(null);
       return;
     }
@@ -35,7 +36,7 @@ export default function ProjectDetail() {
     setError("");
     (async () => {
       try {
-        const { data } = await axios.get(`${backendUrl}/api/project/${id}`);
+        const { data } = await axios.get(`${backendUrl}/api/project/${slug}`);
         if (cancelled) return;
         if (data?.success && data.project) {
           setProject(data.project);
@@ -57,7 +58,23 @@ export default function ProjectDetail() {
     return () => {
       cancelled = true;
     };
-  }, [id, backendUrl]);
+  }, [slug, backendUrl]);
+
+  useEffect(() => {
+    if (!project?.slug || !slug) return;
+    if (slug !== project.slug && /^[a-f\d]{24}$/i.test(slug)) {
+      navigate(`/projects/${project.slug}`, { replace: true });
+    }
+  }, [project, slug, navigate]);
+
+  useEffect(() => {
+    if (!project?.name) return;
+    const prev = document.title;
+    document.title = `${project.name} | Mira Bhayandar`;
+    return () => {
+      document.title = prev;
+    };
+  }, [project?.name]);
 
   if (!backendUrl) {
     return (
