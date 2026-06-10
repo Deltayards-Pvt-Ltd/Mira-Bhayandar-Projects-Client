@@ -11,6 +11,8 @@ import {
   parseProjectsSearchParams,
 } from "../utils/projectsFilters";
 import UpcomingProjects from "../components/upcomingProjects";
+import Seo from "../components/Seo";
+import { PROJECTS_LISTING_JSON_LD, PROJECTS_LISTING_SEO } from "../seo/projectsListingSeo";
 
 function toggle(list, value) {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
@@ -113,6 +115,12 @@ export default function Projects() {
 
   return (
     <div className="min-h-full bg-[#fdfbf7] text-navy">
+      <Seo
+        title={PROJECTS_LISTING_SEO.title}
+        description={PROJECTS_LISTING_SEO.description}
+        canonical="/projects"
+        jsonLd={PROJECTS_LISTING_JSON_LD}
+      />
       <section
         className="bg-navy-gradient noise-overlay relative border-b border-white/10"
         aria-labelledby="projects-page-heading"

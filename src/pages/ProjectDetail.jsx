@@ -10,6 +10,8 @@ import ProjectDetailGallery from "../components/ProjectDetailGallery";
 import ProjectDetailEnquiry from "../components/ProjectDetailEnquiry";
 import ProjectMahaReraDetails from "../components/projectMahaReraDetails";
 import ProjectWalkthoughSection from "../components/ProjectWalkthoughSection";
+import Seo from "../components/Seo";
+import { buildProjectJsonLd, buildProjectSeo } from "../seo/buildProjectJsonLd";
 
 export default function ProjectDetail() {
   const { slug } = useParams();
@@ -67,15 +69,6 @@ export default function ProjectDetail() {
     }
   }, [project, slug, navigate]);
 
-  useEffect(() => {
-    if (!project?.name) return;
-    const prev = document.title;
-    document.title = `${project.name} | Mira Bhayandar`;
-    return () => {
-      document.title = prev;
-    };
-  }, [project?.name]);
-
   if (!backendUrl) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 text-center text-cream/80">
@@ -109,8 +102,12 @@ export default function ProjectDetail() {
     );
   }
 
+  const seo = buildProjectSeo(project, assetUrl);
+  const jsonLd = buildProjectJsonLd(project);
+
   return (
     <>
+      <Seo {...seo} jsonLd={jsonLd} />
       <ProjectDetailIntro project={project} assetUrl={assetUrl} />
       <ProjectDetailQuickFacts project={project} />
       <ProjectDetailAbout project={project} />

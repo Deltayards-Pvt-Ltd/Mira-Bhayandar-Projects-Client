@@ -1,5 +1,7 @@
 import { useContext, useEffect } from "react";
 import { AppContext } from "../context/AppContext";
+import Seo from "../components/Seo";
+import { HOME_JSON_LD, HOME_SEO } from "../seo/homeJsonLd";
 import HeroCarousel from "../components/HeroCarousel";
 import Storytelling from "../components/Storytelling";
 import ArchitecturalVision from "../components/ArchitecturalVision";
@@ -25,6 +27,12 @@ export default function Home() {
 
   return (
     <>
+      <Seo
+        title={HOME_SEO.title}
+        description={HOME_SEO.description}
+        canonical="/"
+        jsonLd={HOME_JSON_LD}
+      />
       <HeroCarousel />
       <Storytelling />
       <ExploreByLocation />
