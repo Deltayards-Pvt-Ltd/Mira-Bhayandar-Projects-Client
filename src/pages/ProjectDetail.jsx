@@ -103,7 +103,7 @@ export default function ProjectDetail() {
   }
 
   const seo = buildProjectSeo(project, assetUrl);
-  const jsonLd = buildProjectJsonLd(project);
+  const jsonLd = buildProjectJsonLd(project, assetUrl);
 
   return (
     <>

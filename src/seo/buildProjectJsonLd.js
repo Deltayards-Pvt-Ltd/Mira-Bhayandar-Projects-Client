@@ -1,4 +1,5 @@
 import { formatPlans } from "../utils/projectPlans";
+import { PROJECT_JSON_LD_OVERRIDES } from "./projectJsonLdOverrides";
 
 const DEFAULT_SITE_URL = "https://www.mirabhayandarproperty.com";
 
@@ -68,6 +69,9 @@ function mainEntityType(propertyType) {
 export function buildProjectJsonLd(project, assetUrl = (p) => p ?? "") {
   const slug = projectSlug(project);
   if (!slug) return null;
+
+  const override = PROJECT_JSON_LD_OVERRIDES[slug];
+  if (override) return override;
 
   const siteUrl = getSiteUrl();
   const projectUrl = `${siteUrl}/projects/${slug}`;
