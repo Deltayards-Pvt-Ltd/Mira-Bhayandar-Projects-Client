@@ -15,7 +15,7 @@ export default function Partners() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <header className="mb-6 text-center md:mb-8">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-gold-ink">
-            Stronger Together
+            Stronger Together 
           </p>
           <h2
             id="partners-heading"
