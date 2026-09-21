@@ -16,18 +16,8 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.mirabhayandarproperty.com/privacy</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://www.mirabhayandarproperty.com/terms</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
     <loc>https://www.mirabhayandarproperty.com/projects/sky-heights</loc>
-    <lastmod>2026-06-12</lastmod>
+    <lastmod>2026-07-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -39,7 +29,7 @@
   </url>
   <url>
     <loc>https://www.mirabhayandarproperty.com/projects/anjani-bliss</loc>
-    <lastmod>2026-06-09</lastmod>
+    <lastmod>2026-06-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -51,7 +41,7 @@
   </url>
   <url>
     <loc>https://www.mirabhayandarproperty.com/projects/ayodhya</loc>
-    <lastmod>2026-06-09</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -80,14 +70,8 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.mirabhayandarproperty.com/projects/jp-north-west-end</loc>
-    <lastmod>2026-06-10</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://www.mirabhayandarproperty.com/projects/windermere</loc>
-    <lastmod>2026-06-10</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -99,7 +83,7 @@
   </url>
   <url>
     <loc>https://www.mirabhayandarproperty.com/projects/opulence</loc>
-    <lastmod>2026-06-10</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -114,6 +98,12 @@
     <lastmod>2026-06-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.mirabhayandarproperty.com/blogs/6a3cd21e333d1b72b7f16448</loc>
+    <lastmod>2026-06-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.mirabhayandarproperty.com/blogs/6a0ab52e6c1721be153b5c4b</loc>

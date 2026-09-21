@@ -63,7 +63,7 @@ export default function ContactSection() {
   return (
     <section
       id="site-contact"
-      className="bg-[#fdf8f1] py-20 text-navy md:py-28"
+      className="scroll-mt-[5.5rem] bg-[#fdf8f1] py-20 text-navy md:scroll-mt-28 md:py-28"
       aria-labelledby="contact-heading"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

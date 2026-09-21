@@ -1,7 +1,30 @@
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "react-toastify";
 import { AppContext } from "../context/AppContext";
 import { submitLead } from "../utils/submitLead";
+
+const POPUP_DELAY_MS = 5000;
+
+function popupDismissKey(project) {
+  return `mbp-enquiry-popup:${project?.slug || project?._id || "project"}`;
+}
+
+function wasPopupDismissed(project) {
+  try {
+    return sessionStorage.getItem(popupDismissKey(project)) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markPopupDismissed(project) {
+  try {
+    sessionStorage.setItem(popupDismissKey(project), "1");
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
 
 function SendIcon({ className }) {
   return (
@@ -66,6 +89,24 @@ function MapPinIcon({ className }) {
   );
 }
 
+function CloseIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  );
+}
+
 /** @returns {string | null} Google Maps embed URL, or null if invalid */
 function mapsEmbedUrl(lat, lng) {
   const la = Number(lat);
@@ -81,21 +122,14 @@ function mapsSearchUrl(query) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
 }
 
-/**
- * @param {{ project: Record<string, unknown> }} props
- * 
- *
- */
-export default function ProjectDetailEnquiry({ project }) {
+function EnquiryForm({
+  projectName,
+  locationText,
+  idPrefix,
+  heading = "Quick enquiry",
+  onSuccess,
+}) {
   const { backendUrl } = useContext(AppContext) ?? {};
-
-  const projectName = String(project?.name || "this project").trim() || "this project";
-  const locationText = String(project?.location || "").trim();
-
-  const embedSrc = useMemo(() => {
-    return mapsEmbedUrl(project?.latitude, project?.longitude);
-  }, [project?.latitude, project?.longitude]);
-
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -103,29 +137,6 @@ export default function ProjectDetailEnquiry({ project }) {
     () => `I'm interested in ${projectName}.${locationText ? ` Location: ${locationText}.` : ""}`,
   );
   const [submitting, setSubmitting] = useState(false);
-
-  const locationShareUrl = mapsSearchUrl(`${projectName} ${locationText}`.trim());
-
-  async function shareLocationLink() {
-    const title = project?.name ? `${project.name} — Location` : "Project location";
-
-    try {
-      if (navigator.share) {
-        await navigator.share({ title, url: locationShareUrl });
-        return;
-      }
-      await navigator.clipboard.writeText(locationShareUrl);
-      toast.success("Location link copied");
-    } catch (err) {
-      if (err?.name === "AbortError") return;
-      try {
-        await navigator.clipboard.writeText(locationShareUrl);
-        toast.success("Location link copied");
-      } catch {
-        toast.error("Could not share location link");
-      }
-    }
-  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -150,6 +161,7 @@ export default function ProjectDetailEnquiry({ project }) {
         `I'm interested in ${projectName}.${locationText ? ` Location: ${locationText}.` : ""}`,
       );
       toast.success("Thanks — we’ll get back to you shortly.");
+      onSuccess?.();
     } catch (err) {
       console.error("submitLead failed:", err);
       const msg =
@@ -160,6 +172,209 @@ export default function ProjectDetailEnquiry({ project }) {
       toast.error(msg);
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  const fieldClass =
+    "w-full rounded-lg border border-navy/[0.12] bg-white px-4 py-3 font-sans text-sm text-navy outline-none ring-gold/30 transition placeholder:text-navy/35 focus:border-gold/50 focus:ring-2";
+  const labelClass =
+    "block font-sans text-[10px] font-semibold uppercase tracking-[0.15em] text-gold-ink";
+
+  return (
+    <>
+      {heading ? (
+        <h3 className="mb-7 font-sans text-lg font-bold text-navy md:text-xl">{heading}</h3>
+      ) : null}
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div className="space-y-2">
+            <label htmlFor={`${idPrefix}-name`} className={labelClass}>
+              Name
+            </label>
+            <input
+              id={`${idPrefix}-name`}
+              name="name"
+              type="text"
+              autoComplete="name"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={fieldClass}
+              placeholder="Your name"
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor={`${idPrefix}-phone`} className={labelClass}>
+              Phone
+            </label>
+            <input
+              id={`${idPrefix}-phone`}
+              name="phone"
+              type="tel"
+              autoComplete="tel"
+              required
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className={fieldClass}
+              placeholder="+91 …"
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <label htmlFor={`${idPrefix}-email`} className={labelClass}>
+            Email
+          </label>
+          <input
+            id={`${idPrefix}-email`}
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={fieldClass}
+            placeholder="you@example.com"
+          />
+        </div>
+        <div className="space-y-2">
+          <label htmlFor={`${idPrefix}-message`} className={labelClass}>
+            Message
+          </label>
+          <textarea
+            id={`${idPrefix}-message`}
+            name="message"
+            rows={4}
+            required
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            className={`${fieldClass} resize-y`}
+            placeholder="Tell us what you need…"
+          />
+        </div>
+        <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
+          <button
+            type="submit"
+            disabled={submitting}
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-gold px-8 py-3.5 font-sans text-xs font-bold uppercase tracking-[0.12em] text-navy shadow-sm transition hover:bg-gold-light enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 md:text-[13px]"
+          >
+            {submitting ? "Sending…" : "Send enquiry"}
+            {!submitting ? <SendIcon className="text-navy" /> : null}
+          </button>
+        </div>
+      </form>
+    </>
+  );
+}
+
+function EnquiryPopup({ open, onClose, projectName, locationText, onSuccess }) {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-navy/92 p-4 backdrop-blur-md"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="project-enquiry-popup-heading"
+      onClick={onClose}
+    >
+      <div
+        className="relative max-h-[min(92vh,720px)] w-full max-w-lg overflow-y-auto rounded-3xl border border-navy/[0.08] bg-white p-7 shadow-[0_16px_48px_-24px_rgba(10,22,40,0.2)] sm:p-9"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full border border-navy/10 bg-navy/[0.04] text-navy transition-colors hover:bg-navy/[0.08]"
+          aria-label="Close enquiry form"
+          onClick={onClose}
+        >
+          <CloseIcon />
+        </button>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-ink">
+          Talk to sales
+        </p>
+        <h2
+          id="project-enquiry-popup-heading"
+          className="mt-2 pr-10 text-2xl font-normal tracking-tight text-navy sm:text-3xl"
+          style={{ fontFamily: "var(--font-heading)" }}
+        >
+          Enquire about {projectName}
+        </h2>
+        <p className="mt-3 max-w-xl text-sm leading-relaxed text-navy/65">
+          Share your details and we&apos;ll connect you with the sales team for this project.
+        </p>
+        <div className="mt-7">
+          <EnquiryForm
+            projectName={projectName}
+            locationText={locationText}
+            idPrefix="project-enquiry-popup"
+            onSuccess={onSuccess}
+          />
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+/**
+ * @param {{ project: Record<string, unknown> }} props
+ */
+export default function ProjectDetailEnquiry({ project }) {
+  const projectName = String(project?.name || "this project").trim() || "this project";
+  const locationText = String(project?.location || "").trim();
+  const [popupOpen, setPopupOpen] = useState(false);
+
+  const embedSrc = useMemo(() => {
+    return mapsEmbedUrl(project?.latitude, project?.longitude);
+  }, [project?.latitude, project?.longitude]);
+
+  const locationShareUrl = mapsSearchUrl(`${projectName} ${locationText}`.trim());
+
+  useEffect(() => {
+    if (wasPopupDismissed(project)) return undefined;
+    const timer = window.setTimeout(() => {
+      if (!wasPopupDismissed(project)) setPopupOpen(true);
+    }, POPUP_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [project]);
+
+  function closePopup() {
+    markPopupDismissed(project);
+    setPopupOpen(false);
+  }
+
+  async function shareLocationLink() {
+    const title = project?.name ? `${project.name} — Location` : "Project location";
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, url: locationShareUrl });
+        return;
+      }
+      await navigator.clipboard.writeText(locationShareUrl);
+      toast.success("Location link copied");
+    } catch (err) {
+      if (err?.name === "AbortError") return;
+      try {
+        await navigator.clipboard.writeText(locationShareUrl);
+        toast.success("Location link copied");
+      } catch {
+        toast.error("Could not share location link");
+      }
     }
   }
 
@@ -185,98 +400,12 @@ export default function ProjectDetailEnquiry({ project }) {
 
         <div className="mt-12 grid grid-cols-1 items-stretch gap-10 lg:grid-cols-2 lg:gap-14">
           <div className="rounded-3xl border border-navy/[0.08] bg-white p-7 shadow-[0_16px_48px_-24px_rgba(10,22,40,0.2)] sm:p-9">
-            <h3 className="mb-7 font-sans text-lg font-bold text-navy md:text-xl">
-              Quick enquiry
-            </h3>
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <label
-                    htmlFor="project-enquiry-name"
-                    className="block font-sans text-[10px] font-semibold uppercase tracking-[0.15em] text-gold-ink"
-                  >
-                    Name
-                  </label>
-                  <input
-                    id="project-enquiry-name"
-                    name="name"
-                    type="text"
-                    autoComplete="name"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-lg border border-navy/[0.12] bg-white px-4 py-3 font-sans text-sm text-navy outline-none ring-gold/30 transition placeholder:text-navy/35 focus:border-gold/50 focus:ring-2"
-                    placeholder="Your name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="project-enquiry-phone"
-                    className="block font-sans text-[10px] font-semibold uppercase tracking-[0.15em] text-gold-ink"
-                  >
-                    Phone
-                  </label>
-                  <input
-                    id="project-enquiry-phone"
-                    name="phone"
-                    type="tel"
-                    autoComplete="tel"
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full rounded-lg border border-navy/[0.12] bg-white px-4 py-3 font-sans text-sm text-navy outline-none ring-gold/30 transition placeholder:text-navy/35 focus:border-gold/50 focus:ring-2"
-                    placeholder="+91 …"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label
-                  htmlFor="project-enquiry-email"
-                  className="block font-sans text-[10px] font-semibold uppercase tracking-[0.15em] text-gold-ink"
-                >
-                  Email
-                </label>
-                <input
-                  id="project-enquiry-email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-lg border border-navy/[0.12] bg-white px-4 py-3 font-sans text-sm text-navy outline-none ring-gold/30 transition placeholder:text-navy/35 focus:border-gold/50 focus:ring-2"
-                  placeholder="you@example.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <label
-                  htmlFor="project-enquiry-message"
-                  className="block font-sans text-[10px] font-semibold uppercase tracking-[0.15em] text-gold-ink"
-                >
-                  Message
-                </label>
-                <textarea
-                  id="project-enquiry-message"
-                  name="message"
-                  rows={4}
-                  required
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="w-full resize-y rounded-lg border border-navy/[0.12] bg-white px-4 py-3 font-sans text-sm text-navy outline-none ring-gold/30 transition placeholder:text-navy/35 focus:border-gold/50 focus:ring-2"
-                  placeholder="Tell us what you need…"
-                />
-              </div>
-              <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-gold px-8 py-3.5 font-sans text-xs font-bold uppercase tracking-[0.12em] text-navy shadow-sm transition hover:bg-gold-light enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 md:text-[13px]"
-                >
-                  {submitting ? "Sending…" : "Send enquiry"}
-                  {!submitting ? <SendIcon className="text-navy" /> : null}
-                </button>
-              </div>
-            </form>
+            <EnquiryForm
+              projectName={projectName}
+              locationText={locationText}
+              idPrefix="project-enquiry"
+              onSuccess={closePopup}
+            />
           </div>
 
           <div className="flex min-h-[280px] flex-col lg:min-h-[420px]">
@@ -321,7 +450,7 @@ export default function ProjectDetailEnquiry({ project }) {
                 type="button"
                 onClick={shareLocationLink}
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-gold px-8 py-3.5 font-sans text-xs font-bold uppercase tracking-[0.12em] text-navy shadow-sm transition hover:bg-gold-light enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 md:text-[13px]"
-                >
+              >
                 Share location link
                 <ShareIcon className="text-navy" />
               </button>
@@ -329,6 +458,14 @@ export default function ProjectDetailEnquiry({ project }) {
           </div>
         </div>
       </div>
+
+      <EnquiryPopup
+        open={popupOpen}
+        onClose={closePopup}
+        projectName={projectName}
+        locationText={locationText}
+        onSuccess={closePopup}
+      />
     </section>
   );
 }
