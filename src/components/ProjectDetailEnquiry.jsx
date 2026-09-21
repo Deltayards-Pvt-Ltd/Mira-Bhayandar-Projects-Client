@@ -127,6 +127,7 @@ function EnquiryForm({
   locationText,
   idPrefix,
   heading = "Quick enquiry",
+  compact = false,
   onSuccess,
 }) {
   const { backendUrl } = useContext(AppContext) ?? {};
@@ -175,19 +176,30 @@ function EnquiryForm({
     }
   }
 
-  const fieldClass =
-    "w-full rounded-lg border border-navy/[0.12] bg-white px-4 py-3 font-sans text-sm text-navy outline-none ring-gold/30 transition placeholder:text-navy/35 focus:border-gold/50 focus:ring-2";
-  const labelClass =
-    "block font-sans text-[10px] font-semibold uppercase tracking-[0.15em] text-gold-ink";
+  const fieldClass = compact
+    ? "w-full rounded-md border border-navy/[0.12] bg-white px-2.5 py-1.5 font-sans text-xs text-navy outline-none ring-gold/30 transition placeholder:text-navy/35 focus:border-gold/50 focus:ring-1"
+    : "w-full rounded-lg border border-navy/[0.12] bg-white px-4 py-3 font-sans text-sm text-navy outline-none ring-gold/30 transition placeholder:text-navy/35 focus:border-gold/50 focus:ring-2";
+  const labelClass = compact
+    ? "block font-sans text-[9px] font-semibold uppercase tracking-[0.12em] text-gold-ink"
+    : "block font-sans text-[10px] font-semibold uppercase tracking-[0.15em] text-gold-ink";
+  const fieldWrapClass = compact ? "space-y-1" : "space-y-2";
 
   return (
     <>
       {heading ? (
-        <h3 className="mb-7 font-sans text-lg font-bold text-navy md:text-xl">{heading}</h3>
+        <h3
+          className={
+            compact
+              ? "mb-4 font-sans text-base font-bold text-navy"
+              : "mb-7 font-sans text-lg font-bold text-navy md:text-xl"
+          }
+        >
+          {heading}
+        </h3>
       ) : null}
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <div className="space-y-2">
+      <form onSubmit={handleSubmit} className={compact ? "space-y-2" : "space-y-5"}>
+        <div className={compact ? "grid grid-cols-2 gap-2" : "grid grid-cols-1 gap-5 sm:grid-cols-2"}>
+          <div className={fieldWrapClass}>
             <label htmlFor={`${idPrefix}-name`} className={labelClass}>
               Name
             </label>
@@ -203,7 +215,7 @@ function EnquiryForm({
               placeholder="Your name"
             />
           </div>
-          <div className="space-y-2">
+          <div className={fieldWrapClass}>
             <label htmlFor={`${idPrefix}-phone`} className={labelClass}>
               Phone
             </label>
@@ -220,7 +232,7 @@ function EnquiryForm({
             />
           </div>
         </div>
-        <div className="space-y-2">
+        <div className={fieldWrapClass}>
           <label htmlFor={`${idPrefix}-email`} className={labelClass}>
             Email
           </label>
@@ -236,14 +248,14 @@ function EnquiryForm({
             placeholder="you@example.com"
           />
         </div>
-        <div className="space-y-2">
+        <div className={fieldWrapClass}>
           <label htmlFor={`${idPrefix}-message`} className={labelClass}>
             Message
           </label>
           <textarea
             id={`${idPrefix}-message`}
             name="message"
-            rows={4}
+            rows={compact ? 2 : 4}
             required
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -251,11 +263,15 @@ function EnquiryForm({
             placeholder="Tell us what you need…"
           />
         </div>
-        <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
+        <div className={`flex flex-col sm:flex-row sm:flex-wrap sm:items-center ${compact ? "gap-2 pt-0.5" : "gap-4 pt-2 sm:gap-6"}`}>
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-gold px-8 py-3.5 font-sans text-xs font-bold uppercase tracking-[0.12em] text-navy shadow-sm transition hover:bg-gold-light enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 md:text-[13px]"
+            className={
+              compact
+                ? "inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-gold px-5 py-2 font-sans text-[10px] font-bold uppercase tracking-[0.12em] text-navy shadow-sm transition hover:bg-gold-light enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                : "inline-flex items-center justify-center gap-2 rounded-full bg-gold px-8 py-3.5 font-sans text-xs font-bold uppercase tracking-[0.12em] text-navy shadow-sm transition hover:bg-gold-light enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 md:text-[13px]"
+            }
           >
             {submitting ? "Sending…" : "Send enquiry"}
             {!submitting ? <SendIcon className="text-navy" /> : null}
@@ -285,14 +301,14 @@ function EnquiryPopup({ open, onClose, projectName, locationText, onSuccess }) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-navy/92 p-4 backdrop-blur-md"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-navy/30 p-4 sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-labelledby="project-enquiry-popup-heading"
       onClick={onClose}
     >
       <div
-        className="relative max-h-[min(92vh,720px)] w-full max-w-lg overflow-y-auto rounded-3xl border border-navy/[0.08] bg-white p-7 shadow-[0_16px_48px_-24px_rgba(10,22,40,0.2)] sm:p-9"
+        className="relative mx-auto max-h-[min(90vh,720px)] w-full max-w-lg overflow-y-auto rounded-3xl border border-navy/[0.08] bg-white p-6 shadow-[0_24px_60px_-20px_rgba(10,22,40,0.4)] sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -308,19 +324,20 @@ function EnquiryPopup({ open, onClose, projectName, locationText, onSuccess }) {
         </p>
         <h2
           id="project-enquiry-popup-heading"
-          className="mt-2 pr-10 text-2xl font-normal tracking-tight text-navy sm:text-3xl"
+          className="mt-2 pr-12 text-2xl font-normal tracking-tight text-navy sm:text-3xl"
           style={{ fontFamily: "var(--font-heading)" }}
         >
           Enquire about {projectName}
         </h2>
-        <p className="mt-3 max-w-xl text-sm leading-relaxed text-navy/65">
-          Share your details and we&apos;ll connect you with the sales team for this project.
+        <p className="mt-2 text-sm leading-relaxed text-navy/65">
+          Share your details and we&apos;ll connect you with the sales team.
         </p>
-        <div className="mt-7">
+        <div className="mt-6">
           <EnquiryForm
             projectName={projectName}
             locationText={locationText}
             idPrefix="project-enquiry-popup"
+            heading={null}
             onSuccess={onSuccess}
           />
         </div>
