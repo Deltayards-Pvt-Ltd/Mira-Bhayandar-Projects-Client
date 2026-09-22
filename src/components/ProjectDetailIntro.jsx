@@ -80,9 +80,10 @@ function getStatusBadge(status) {
  * @param {{
  *   project: Record<string, unknown>;
  *   assetUrl: (path: string) => string;
+ *   onContactClick?: (e: import("react").MouseEvent, href: string, newTab?: boolean) => void;
  * }} props
  */
-export default function ProjectDetailIntro({ project, assetUrl }) {
+export default function ProjectDetailIntro({ project, assetUrl, onContactClick }) {
   const address = String(project?.address || "").trim();
   const locationRaw = String(project?.location || "").trim();
   const addressLine = address || locationRaw;
@@ -191,6 +192,7 @@ export default function ProjectDetailIntro({ project, assetUrl }) {
             <div className="mb-8 flex max-w-full flex-wrap gap-2">
               <a
                 href={telHref}
+                onClick={(e) => onContactClick?.(e, telHref, false)}
                 className="inline-flex max-w-full items-center gap-2 rounded-full border-2 border-white/35 bg-transparent px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-cream transition-colors hover:border-gold hover:bg-white/5 sm:px-5 sm:text-[11px] sm:tracking-[0.14em]"
               >
                 <PhoneIcon className="text-gold-light" />
@@ -200,6 +202,7 @@ export default function ProjectDetailIntro({ project, assetUrl }) {
                 href={whatsAppHref}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={(e) => onContactClick?.(e, whatsAppHref, true)}
                 className="inline-flex max-w-full items-center gap-2 rounded-full border-2 border-white/35 bg-transparent px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-cream transition-colors hover:border-gold hover:bg-white/5 sm:px-5 sm:text-[11px] sm:tracking-[0.14em]"
               >
                 <WhatsAppIcon className="text-gold-light" />

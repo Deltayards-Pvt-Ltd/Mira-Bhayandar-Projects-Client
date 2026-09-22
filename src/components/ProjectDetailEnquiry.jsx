@@ -1,30 +1,17 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "react-toastify";
 import { AppContext } from "../context/AppContext";
 import { submitLead } from "../utils/submitLead";
+import {
+  followContactHref,
+  markEnquiryPopupDismissed,
+  markEnquirySubmitted,
+  wasEnquiryPopupDismissed,
+  wasEnquirySubmitted,
+} from "../utils/projectEnquiry";
 
-const POPUP_DELAY_MS = 5000;
-
-function popupDismissKey(project) {
-  return `mbp-enquiry-popup:${project?.slug || project?._id || "project"}`;
-}
-
-function wasPopupDismissed(project) {
-  try {
-    return sessionStorage.getItem(popupDismissKey(project)) === "1";
-  } catch {
-    return false;
-  }
-}
-
-function markPopupDismissed(project) {
-  try {
-    sessionStorage.setItem(popupDismissKey(project), "1");
-  } catch {
-    /* ignore quota / private mode */
-  }
-}
+const POPUP_DELAY_MS = 0;
 
 function SendIcon({ className }) {
   return (
@@ -348,12 +335,21 @@ function EnquiryPopup({ open, onClose, projectName, locationText, onSuccess }) {
 }
 
 /**
- * @param {{ project: Record<string, unknown> }} props
+ * @param {{
+ *   project: Record<string, unknown>;
+ *   contactGate?: { href: string; newTab?: boolean; id: number } | null;
+ *   onContactGateConsumed?: () => void;
+ * }} props
  */
-export default function ProjectDetailEnquiry({ project }) {
+export default function ProjectDetailEnquiry({
+  project,
+  contactGate = null,
+  onContactGateConsumed,
+}) {
   const projectName = String(project?.name || "this project").trim() || "this project";
   const locationText = String(project?.location || "").trim();
   const [popupOpen, setPopupOpen] = useState(false);
+  const pendingContactRef = useRef(null);
 
   const embedSrc = useMemo(() => {
     return mapsEmbedUrl(project?.latitude, project?.longitude);
@@ -362,16 +358,44 @@ export default function ProjectDetailEnquiry({ project }) {
   const locationShareUrl = mapsSearchUrl(`${projectName} ${locationText}`.trim());
 
   useEffect(() => {
-    if (wasPopupDismissed(project)) return undefined;
+    if (wasEnquirySubmitted(project) || wasEnquiryPopupDismissed(project)) return undefined;
     const timer = window.setTimeout(() => {
-      if (!wasPopupDismissed(project)) setPopupOpen(true);
+      if (!wasEnquirySubmitted(project) && !wasEnquiryPopupDismissed(project)) {
+        setPopupOpen(true);
+      }
     }, POPUP_DELAY_MS);
     return () => window.clearTimeout(timer);
   }, [project]);
 
+  useEffect(() => {
+    if (!contactGate?.href) return;
+    pendingContactRef.current = {
+      href: contactGate.href,
+      newTab: Boolean(contactGate.newTab),
+    };
+    setPopupOpen(true);
+  }, [contactGate]);
+
+  function releasePendingContact() {
+    const pending = pendingContactRef.current;
+    pendingContactRef.current = null;
+    onContactGateConsumed?.();
+    if (pending?.href) {
+      followContactHref(pending.href, pending.newTab);
+    }
+  }
+
   function closePopup() {
-    markPopupDismissed(project);
+    markEnquiryPopupDismissed(project);
     setPopupOpen(false);
+    releasePendingContact();
+  }
+
+  function handleEnquirySuccess() {
+    markEnquirySubmitted(project);
+    markEnquiryPopupDismissed(project);
+    setPopupOpen(false);
+    releasePendingContact();
   }
 
   async function shareLocationLink() {
@@ -421,7 +445,7 @@ export default function ProjectDetailEnquiry({ project }) {
               projectName={projectName}
               locationText={locationText}
               idPrefix="project-enquiry"
-              onSuccess={closePopup}
+              onSuccess={handleEnquirySuccess}
             />
           </div>
 
@@ -481,7 +505,7 @@ export default function ProjectDetailEnquiry({ project }) {
         onClose={closePopup}
         projectName={projectName}
         locationText={locationText}
-        onSuccess={closePopup}
+        onSuccess={handleEnquirySuccess}
       />
     </section>
   );

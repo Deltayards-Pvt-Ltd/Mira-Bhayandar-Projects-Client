@@ -12,6 +12,7 @@ import ProjectMahaReraDetails from "../components/projectMahaReraDetails";
 import ProjectWalkthoughSection from "../components/ProjectWalkthoughSection";
 import Seo from "../components/Seo";
 import { buildProjectJsonLd, buildProjectSeo } from "../seo/buildProjectJsonLd";
+import { wasEnquirySubmitted } from "../utils/projectEnquiry";
 
 export default function ProjectDetail() {
   const { slug } = useParams();
@@ -23,6 +24,7 @@ export default function ProjectDetail() {
   const [project, setProject] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [contactGate, setContactGate] = useState(null);
 
   useEffect(() => {
     if (!slug || !backendUrl) {
@@ -63,11 +65,21 @@ export default function ProjectDetail() {
   }, [slug, backendUrl]);
 
   useEffect(() => {
+    setContactGate(null);
+  }, [slug]);
+
+  useEffect(() => {
     if (!project?.slug || !slug) return;
     if (slug !== project.slug && /^[a-f\d]{24}$/i.test(slug)) {
       navigate(`/projects/${project.slug}`, { replace: true });
     }
   }, [project, slug, navigate]);
+
+  function handleContactClick(e, href, newTab = false) {
+    if (!href || wasEnquirySubmitted(project)) return;
+    e.preventDefault();
+    setContactGate({ href, newTab: Boolean(newTab), id: Date.now() });
+  }
 
   if (!backendUrl) {
     return (
@@ -108,14 +120,22 @@ export default function ProjectDetail() {
   return (
     <>
       <Seo {...seo} jsonLd={jsonLd} />
-      <ProjectDetailIntro project={project} assetUrl={assetUrl} />
+      <ProjectDetailIntro
+        project={project}
+        assetUrl={assetUrl}
+        onContactClick={handleContactClick}
+      />
       <ProjectDetailQuickFacts project={project} />
       <ProjectDetailAbout project={project} />
       <ProjectWalkthoughSection project={project} assetUrl={assetUrl} />
       <ProjectDetailGallery project={project} assetUrl={assetUrl} />
       <ProjectDetailPlans project={project} assetUrl={assetUrl} />
       <ProjectMahaReraDetails project={project} />
-      <ProjectDetailEnquiry project={project} />
+      <ProjectDetailEnquiry
+        project={project}
+        contactGate={contactGate}
+        onContactGateConsumed={() => setContactGate(null)}
+      />
     </>
   );
 }
