@@ -49,7 +49,7 @@ export default function Storytelling() {
           We don't just sell homes.
         </h2>
 
-        <h2
+        <p
           className={`reveal text-gradient-gold mt-4 text-center text-3xl leading-[1.15] md:text-4xl lg:text-5xl ${
             visible ? "is-visible" : ""
           }`}
@@ -59,7 +59,7 @@ export default function Storytelling() {
           }}
         >
           We help you find where your story begins.
-        </h2>
+        </p>
 
         <p
           className={`reveal mx-auto mt-6 max-w-2xl text-center text-base leading-relaxed text-white/70 md:text-lg ${

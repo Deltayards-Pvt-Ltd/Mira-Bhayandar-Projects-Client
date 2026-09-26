@@ -4,6 +4,9 @@ import axios from "axios";
 import { AppContext } from "../context/AppContext";
 import BlogCard, { formatBlogDate } from "../components/BlogCard";
 import DreamHomeCta from "../components/DreamHomeCta";
+import Seo from "../components/Seo";
+import Breadcrumbs from "../components/Breadcrumbs";
+import { buildBlogPostJsonLd, buildBlogSeo } from "../seo/blogSeo";
 
 function looksLikeHtml(text) {
   return /<[a-z][\s\S]*>/i.test(String(text ?? ""));
@@ -122,7 +125,19 @@ export default function BlogDetail() {
   if (error || !blog) {
     return (
       <div className="mx-auto max-w-2xl bg-[#fdfbf7] px-4 py-16 pt-[calc(5.5rem+env(safe-area-inset-top,0px))] text-center sm:pt-28 md:pt-32">
-        <p className="text-navy/75">{error || "Article not found."}</p>
+        <Seo
+          title="Article not found"
+          description="This article does not exist on Mira Bhayandar Property."
+          canonical={id ? `/blogs/${id}` : "/blogs"}
+          noindex
+        />
+        <h1
+          className="text-3xl font-normal tracking-tight text-navy"
+          style={{ fontFamily: "var(--font-heading)" }}
+        >
+          Article not found
+        </h1>
+        <p className="mt-4 text-navy/75">{error || "Article not found."}</p>
         <Link
           to="/blogs"
           className="mt-6 inline-block text-sm font-semibold uppercase tracking-wider text-gold-ink hover:text-gold-dark"
@@ -139,9 +154,17 @@ export default function BlogDetail() {
 
   return (
     <div className="min-h-full bg-[#fdfbf7] text-navy">
+      <Seo {...buildBlogSeo(blog, assetUrl)} jsonLd={buildBlogPostJsonLd(blog, assetUrl)} />
       <article>
         <header className="bg-navy-gradient noise-overlay relative border-b border-white/10">
           <div className="relative z-[2] mx-auto max-w-4xl px-4 pb-10 pt-[calc(5.5rem+env(safe-area-inset-top,0px))] sm:px-6 sm:pb-12 sm:pt-28 md:pt-32 md:pb-14 lg:px-8">
+            <Breadcrumbs
+              items={[
+                { to: "/", label: "Home" },
+                { to: "/blogs", label: "All Blogs" },
+                { label: String(blog.title || "Article") },
+              ]}
+            />
             <span className="mb-4 inline-block rounded-md bg-gold px-2.5 py-1 font-sans text-[10px] font-bold uppercase tracking-wide text-navy md:text-xs">
               {badge}
             </span>
@@ -173,6 +196,10 @@ export default function BlogDetail() {
               <img
                 src={imgSrc}
                 alt={blog.title ? String(blog.title) : "Article cover"}
+                width={1200}
+                height={514}
+                fetchPriority="high"
+                decoding="async"
                 className="aspect-[21/9] w-full object-cover"
               />
             </div>

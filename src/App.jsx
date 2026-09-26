@@ -10,6 +10,7 @@ import Blogs from "./pages/Blogs";
 import BlogDetail from "./pages/BlogDetail";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import NotFound from "./pages/NotFound";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function App() {
@@ -36,6 +37,7 @@ export default function App() {
               <Route path="/blogs/:id" element={<BlogDetail />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
+              <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
         </div>

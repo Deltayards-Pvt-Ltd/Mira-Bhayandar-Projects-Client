@@ -50,6 +50,9 @@ export function filterProjects(
 /**
  * @param {{ q?: string; areas?: string[]; configurations?: string[]; propertyTypes?: string[] }} filters
  */
+const TRACKING_PARAM =
+  /^(utm_|gclid$|fbclid$|gbraid$|wbraid$|msclkid$|gad_source$|gad_campaignid$|ttclid$|li_fat_id$|twclid$|mc_eid$)/i;
+
 export function buildProjectsSearchParams({
   q = "",
   areas = [],
@@ -63,6 +66,33 @@ export function buildProjectsSearchParams({
   if (configurations.length) params.set("config", configurations.join(","));
   if (propertyTypes.length) params.set("propertyType", propertyTypes.join(","));
   return params;
+}
+
+/** Keep ads/analytics params when filter state rewrites the query string. */
+export function withPreservedTracking(currentParams, nextParams) {
+  const next = new URLSearchParams(nextParams);
+  const current =
+    currentParams instanceof URLSearchParams
+      ? currentParams
+      : new URLSearchParams(currentParams || "");
+  for (const [key, value] of current.entries()) {
+    if (TRACKING_PARAM.test(key) && !next.has(key)) next.append(key, value);
+  }
+  return next;
+}
+
+export function parsePageParam(searchParams) {
+  const n = Number(searchParams?.get?.("page"));
+  if (!Number.isInteger(n) || n < 1) return 1;
+  return n;
+}
+
+export function hrefWithPage(pathname, searchParams, page) {
+  const next = new URLSearchParams(searchParams);
+  if (page <= 1) next.delete("page");
+  else next.set("page", String(page));
+  const qs = next.toString();
+  return qs ? `${pathname}?${qs}` : pathname;
 }
 
 /**

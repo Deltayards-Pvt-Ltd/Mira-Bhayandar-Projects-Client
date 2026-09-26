@@ -1,12 +1,7 @@
 import { formatPlans } from "../utils/projectPlans";
 import { PROJECT_JSON_LD_OVERRIDES } from "./projectJsonLdOverrides";
-
-const DEFAULT_SITE_URL = "https://www.mirabhayandarproperty.com";
-
-function getSiteUrl() {
-  const raw = import.meta.env.VITE_SITE_URL || DEFAULT_SITE_URL;
-  return String(raw).replace(/\/+$/, "");
-}
+import { buildBreadcrumbList } from "./structuredData.js";
+import { cleanText, getSiteUrl, metaDescription, toDateOnly } from "./site.js";
 
 function parseReraIds(reraNo) {
   const raw = String(reraNo ?? "").trim();
@@ -66,12 +61,32 @@ function mainEntityType(propertyType) {
  * Not in model (omitted): postalCode, separate address line, per-project agent block
  * (organization schema lives on homepage only).
  */
+function withBreadcrumb(doc, slug, label) {
+  if (!doc || typeof doc !== "object") return doc;
+  const graph = Array.isArray(doc["@graph"]) ? doc["@graph"] : null;
+  if (graph?.some((node) => node?.["@type"] === "BreadcrumbList")) return doc;
+
+  const breadcrumb = buildBreadcrumbList(
+    [
+      { name: "Home", path: "/" },
+      { name: "Projects", path: "/projects" },
+      { name: label || slug, path: `/projects/${slug}` },
+    ],
+    `/projects/${slug}`,
+  );
+  if (!breadcrumb) return doc;
+  if (!graph) return doc;
+
+  return { ...doc, "@graph": [...graph, breadcrumb] };
+}
+
 export function buildProjectJsonLd(project, assetUrl = (p) => p ?? "") {
   const slug = projectSlug(project);
   if (!slug) return null;
 
+  const label = cleanText(project?.name) || slug;
   const override = PROJECT_JSON_LD_OVERRIDES[slug];
-  if (override) return override;
+  if (override) return withBreadcrumb(override, slug, label);
 
   const siteUrl = getSiteUrl();
   const projectUrl = `${siteUrl}/projects/${slug}`;
@@ -126,31 +141,37 @@ export function buildProjectJsonLd(project, assetUrl = (p) => p ?? "") {
     mainEntity,
   };
 
-  const posted = project.createdAt || project.updatedAt;
-  if (posted) listing.datePosted = new Date(posted).toISOString().slice(0, 10);
+  const posted = toDateOnly(project.createdAt || project.updatedAt);
+  if (posted) listing.datePosted = posted;
 
   if (project.coverImage) {
     const img = assetUrl(String(project.coverImage));
     if (img) listing.image = img.startsWith("http") ? img : `${siteUrl}${img.startsWith("/") ? "" : "/"}${img}`;
   }
 
-  return {
-    "@context": "https://schema.org",
-    "@graph": [listing],
-  };
+  return withBreadcrumb(
+    {
+      "@context": "https://schema.org",
+      "@graph": [listing],
+    },
+    slug,
+    label,
+  );
 }
 
 export function buildProjectSeo(project, assetUrl = (p) => p ?? "") {
   const slug = projectSlug(project);
   const title = buildProjectListingName(project);
-  const description =
-    String(project?.description ?? "").trim().slice(0, 160) ||
-    `Explore ${project?.name ?? "this project"} in Mira Bhayandar. RERA-verified listings with floor plans and amenities.`;
+  const name = cleanText(project?.name) || "this project";
+  const description = metaDescription(
+    project?.description,
+    `Explore ${name} in Mira Bhayandar. RERA-verified listings with floor plans and amenities.`,
+  );
 
   return {
     title,
     description,
-    canonical: `/projects/${slug}`,
+    canonical: slug ? `/projects/${slug}` : "/projects",
     ogImage: project?.coverImage ? assetUrl(String(project.coverImage)) : "/logo.png",
   };
 }

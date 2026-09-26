@@ -162,6 +162,7 @@ export function Navbar() {
                   className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white transition-colors hover:bg-white/20 md:hidden"
                   aria-expanded={menuOpen}
                   aria-controls="mobile-nav"
+                  aria-label={menuOpen ? "Close menu" : "Open menu"}
                   onClick={() => setMenuOpen((o) => !o)}
                 >
                   {menuOpen ? <CloseIcon /> : <MenuIcon />}
@@ -173,7 +174,7 @@ export function Navbar() {
               <nav
                 id="mobile-nav"
                 className="absolute left-4 right-4 top-[calc(100%+0.25rem)] z-[120] rounded-2xl border border-white/40 bg-navy/95 p-2 shadow-[0_24px_80px_-20px_rgba(0,0,0,0.65)] ring-1 ring-white/10 backdrop-blur-xl sm:left-6 sm:right-6 md:hidden"
-                aria-label="Main"
+                aria-label="Mobile"
               >
                 <ul className="flex flex-col gap-0.5">
                   {NAV_LINKS.map((l) => (

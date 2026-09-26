@@ -1,4 +1,5 @@
 import { formatPlans } from "../utils/projectPlans";
+import Breadcrumbs from "./Breadcrumbs";
 
 function MapPinIcon({ className }) {
   return (
@@ -112,6 +113,8 @@ export default function ProjectDetailIntro({ project, assetUrl, onContactClick }
             <img
               src={bannerUrl}
               alt=""
+              fetchPriority="high"
+              decoding="async"
               className="h-full w-full object-cover object-[55%_center] sm:object-[60%_25%] lg:object-[58%_20%]"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-[#0a1628]/92 via-[#0a1628]/55 to-[#0a1628]/10" />
@@ -124,6 +127,13 @@ export default function ProjectDetailIntro({ project, assetUrl, onContactClick }
 
       <div className="relative z-[2] mx-auto flex min-h-[clamp(26rem,56.25vw,40rem)] max-w-6xl flex-col justify-end px-4 pb-10 pt-[calc(5.5rem+env(safe-area-inset-top,0px))] sm:px-6 sm:pb-14 sm:pt-28 md:pt-32 lg:min-h-[clamp(30rem,62vw,48rem)] lg:px-8">
         <div className="w-full max-w-2xl lg:max-w-[58%]">
+          <Breadcrumbs
+            items={[
+              { to: "/", label: "Home" },
+              { to: "/projects", label: "Projects" },
+              { label: String(name) },
+            ]}
+          />
           <h1
             className="text-[2rem] font-normal leading-[1.12] tracking-tight text-white sm:text-5xl sm:leading-[1.08]"
             style={{ fontFamily: "var(--font-heading)" }}

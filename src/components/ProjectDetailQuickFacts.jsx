@@ -69,7 +69,7 @@ export default function ProjectDetailQuickFacts({ project }) {
           Quick facts
         </p>
         <h2
-          id="project-gallery-heading"
+          id="project-quick-facts-heading"
           className="mt-2 text-3xl font-normal tracking-tight text-navy sm:text-4xl"
           style={{ fontFamily: "var(--font-heading)" }}
         >

@@ -293,15 +293,16 @@ export default function ProjectDetailGallery({ project, assetUrl }) {
           ))}
         </ul>
         <div>
-          <div
-            className="flex items-center gap-2 text-navy  mt-4 md:mt-6 cursor-pointer hover:text-gold-light transition-colors duration-200"
+          <button
+            type="button"
+            className="mt-4 flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 font-[inherit] text-left text-navy transition-colors duration-200 hover:text-gold-light md:mt-6"
             onClick={downloadImages}
           >
             <DownloadIcon />
             <span className="text-sm font-semibold uppercase tracking-[0.12em] ">
               Download Images
             </span>
-          </div>
+          </button>
         </div>
       </div>
 

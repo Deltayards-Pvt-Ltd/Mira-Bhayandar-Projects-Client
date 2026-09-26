@@ -68,6 +68,7 @@ export default function HeroCarousel() {
               loop
               playsInline
               preload="metadata"
+              aria-hidden="true"
               className="absolute inset-0 h-full w-full object-cover"
               onError={() => setVideoFailed(true)}
             >
@@ -194,6 +195,7 @@ function SearchField({ label, placeholder, icon: Icon, summary, open, onOpen }) 
       <button
         type="button"
         aria-expanded={open}
+        aria-label={open ? `Hide ${label} options` : `Show ${label} options`}
         className="shrink-0 rounded-full p-1 text-white/40 hover:bg-white/10 hover:text-white/70"
         onClick={onOpen}
       >

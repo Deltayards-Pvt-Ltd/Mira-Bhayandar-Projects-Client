@@ -47,7 +47,7 @@ function CalendarIcon({ className }) {
 /**
  * @param {{ blog: Record<string, unknown>; assetUrl: (path: string) => string }} props
  */
-export default function BlogCard({ blog, assetUrl }) {
+export default function BlogCard({ blog, assetUrl, priority = false }) {
   const imgSrc = blog?.image ? assetUrl(String(blog.image)) : "";
   const badge = String(blog?.tagline ?? "").trim() || "Update";
   const dateStr = formatBlogDate(blog);
@@ -63,8 +63,11 @@ export default function BlogCard({ blog, assetUrl }) {
             src={imgSrc}
             alt={blog?.title ? String(blog.title) : "Blog cover"}
             className="h-full w-full object-cover transition-transform duration-500 motion-safe:group-hover:scale-[1.03]"
-            loading="lazy"
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "auto"}
             decoding="async"
+            width={800}
+            height={500}
           />
         ) : (
           <div

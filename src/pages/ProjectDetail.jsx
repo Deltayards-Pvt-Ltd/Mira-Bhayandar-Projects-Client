@@ -103,7 +103,19 @@ export default function ProjectDetail() {
   if (error || !project) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 pt-[calc(5.5rem+env(safe-area-inset-top,0px))] text-center sm:pt-28 md:pt-32">
-        <p className="text-cream/80">{error || "Project not found."}</p>
+        <Seo
+          title="Project not found"
+          description="This project does not exist on Mira Bhayandar Property."
+          canonical={slug ? `/projects/${slug}` : "/projects"}
+          noindex
+        />
+        <h1
+          className="text-3xl font-normal tracking-tight text-cream"
+          style={{ fontFamily: "var(--font-heading)" }}
+        >
+          Project not found
+        </h1>
+        <p className="mt-4 text-cream/80">{error || "Project not found."}</p>
         <Link
           to="/projects"
           className="mt-6 inline-block text-sm font-semibold uppercase tracking-wider text-gold-light hover:text-gold"

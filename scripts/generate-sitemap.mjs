@@ -68,11 +68,41 @@ const staticPages = [
   { path: "/", priority: "1.0", changefreq: "daily" },
   { path: "/projects", priority: "0.9", changefreq: "daily" },
   { path: "/blogs", priority: "0.7", changefreq: "weekly" },
+  { path: "/privacy", priority: "0.3", changefreq: "yearly", lastmod: "2026-06-11" },
+  { path: "/terms", priority: "0.3", changefreq: "yearly" },
 ];
 
-const entries = staticPages.map((p) =>
-  urlEntry(`${siteUrl}${p.path}`, null, p.changefreq, p.priority),
-);
+function parseExistingEntries(xml) {
+  const entries = [];
+  const blocks = String(xml || "").match(/<url>[\s\S]*?<\/url>/g) || [];
+  for (const block of blocks) {
+    const loc = block.match(/<loc>([^<]+)<\/loc>/)?.[1];
+    if (!loc) continue;
+    entries.push({
+      loc,
+      lastmod: block.match(/<lastmod>([^<]+)<\/lastmod>/)?.[1] || null,
+      changefreq: block.match(/<changefreq>([^<]+)<\/changefreq>/)?.[1] || "weekly",
+      priority: block.match(/<priority>([^<]+)<\/priority>/)?.[1] || "0.5",
+    });
+  }
+  return entries;
+}
+
+const entries = [];
+const seen = new Set();
+
+function pushEntry(loc, lastmod, changefreq, priority) {
+  if (!loc || seen.has(loc)) return;
+  seen.add(loc);
+  entries.push(urlEntry(loc, lastmod, changefreq, priority));
+}
+
+for (const p of staticPages) {
+  pushEntry(`${siteUrl}${p.path}`, p.lastmod || null, p.changefreq, p.priority);
+}
+
+let fetched = false;
+let dynamicCount = 0;
 
 if (backendUrl) {
   try {
@@ -84,39 +114,53 @@ if (backendUrl) {
     const projects = (projectsRes?.allProjects ?? []).filter(
       (p) => p?.active !== false && String(p?.status ?? "") !== "Upcoming",
     );
+    const blogs = blogsRes?.allblogs ?? [];
+
+    if (projects.length === 0 && blogs.length === 0) {
+      throw new Error("API returned no projects or blogs");
+    }
 
     for (const p of projects) {
       const slug = String(p?.slug ?? "").trim() || String(p?._id ?? "").trim();
       if (!slug) continue;
-      entries.push(
-        urlEntry(
-          `${siteUrl}/projects/${slug}`,
-          toLastmod(p.updatedAt || p.createdAt),
-          "weekly",
-          "0.8",
-        ),
+      pushEntry(
+        `${siteUrl}/projects/${slug}`,
+        toLastmod(p.updatedAt || p.createdAt),
+        "weekly",
+        "0.8",
       );
+      dynamicCount += 1;
     }
 
-    for (const b of blogsRes?.allblogs ?? []) {
+    for (const b of blogs) {
       const id = String(b?._id ?? "").trim();
       if (!id) continue;
-      entries.push(
-        urlEntry(
-          `${siteUrl}/blogs/${id}`,
-          toLastmod(b.updatedAt || b.date || b.createdAt),
-          "monthly",
-          "0.6",
-        ),
+      pushEntry(
+        `${siteUrl}/blogs/${id}`,
+        toLastmod(b.updatedAt || b.date || b.createdAt),
+        "monthly",
+        "0.6",
       );
+      dynamicCount += 1;
     }
 
-    console.log(`Sitemap: ${projects.length} projects, ${(blogsRes?.allblogs ?? []).length} blogs`);
+    fetched = true;
+    console.log(`Sitemap: ${projects.length} projects, ${blogs.length} blogs`);
   } catch (err) {
-    console.warn("Sitemap: could not fetch from backend, static pages only.", err.message);
+    console.warn("Sitemap: could not fetch from backend, keeping existing URLs.", err.message);
   }
 } else {
-  console.warn("Sitemap: VITE_BACKEND_URL not set — static pages only.");
+  console.warn("Sitemap: VITE_BACKEND_URL not set — keeping existing project and blog URLs.");
+}
+
+if (!fetched && fs.existsSync(outPath)) {
+  const existing = parseExistingEntries(fs.readFileSync(outPath, "utf8"));
+  for (const entry of existing) {
+    if (!entry.loc.startsWith(`${siteUrl}/`)) continue;
+    pushEntry(entry.loc, entry.lastmod, entry.changefreq, entry.priority);
+    dynamicCount += 1;
+  }
+  console.log(`Sitemap: preserved existing URLs (${entries.length} total).`);
 }
 
 const xml = `<?xml version="1.0" encoding="UTF-8"?>

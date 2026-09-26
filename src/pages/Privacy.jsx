@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import Seo from "../components/Seo";
+import Breadcrumbs from "../components/Breadcrumbs";
+import { buildInfoPageJsonLd } from "../seo/structuredData";
 
 const META = [
   { label: "Effective Date", value: "June 11, 2026" },
@@ -49,6 +51,12 @@ export default function Privacy() {
         title="Privacy Policy"
         description="Privacy Policy for www.mirabhayandarproperty.com — how we collect, use, store, and share your personal data on our Mira Bhayandar real estate listing platform."
         canonical="/privacy"
+        jsonLd={buildInfoPageJsonLd({
+          path: "/privacy",
+          name: "Privacy Policy",
+          description:
+            "Privacy Policy for www.mirabhayandarproperty.com — how we collect, use, store, and share your personal data on our Mira Bhayandar real estate listing platform.",
+        })}
       />
 
       <div className="min-h-full bg-[#fdfbf7] text-navy">
@@ -57,6 +65,13 @@ export default function Privacy() {
           aria-labelledby="privacy-page-heading"
         >
           <div className="relative z-[2] mx-auto max-w-7xl px-4 pb-12 pt-[calc(5.5rem+env(safe-area-inset-top,0px))] text-center sm:px-6 sm:pb-14 sm:pt-28 md:pb-16 md:pt-32 lg:px-8">
+            <Breadcrumbs
+              align="center"
+              items={[
+                { to: "/", label: "Home" },
+                { label: "Privacy Policy" },
+              ]}
+            />
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-gold-light">
               Legal
             </p>

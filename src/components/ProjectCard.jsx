@@ -158,7 +158,7 @@ function WhatsAppIcon({ className }) {
 /**
  * @param {{ project: Record<string, unknown>; assetUrl: (path: string) => string; compact?: boolean }} props
  */
-export default function ProjectCard({ project, assetUrl, compact = false }) {
+export default function ProjectCard({ project, assetUrl, compact = false, priority = false }) {
   const [videoFailed, setVideoFailed] = useState(false);
   const [hovered, setHovered] = useState(false);
   const videoRef = useRef(null);
@@ -198,9 +198,7 @@ export default function ProjectCard({ project, assetUrl, compact = false }) {
     ? `https://wa.me/91${phone}?text=${encodeURIComponent(
         `Hi, I'm interested in ${name}. Please share more details.`,
       )}`
-    : "";  
-
-  console.log("phonep",phone);
+    : "";
 
   const detailPath = projectDetailPath(project);
   const statusBadge = getStatusBadge(
@@ -213,7 +211,10 @@ export default function ProjectCard({ project, assetUrl, compact = false }) {
       className="group cursor-pointer flex h-full flex-col overflow-hidden rounded-2xl border border-navy/12 bg-white text-navy shadow-[0_2px_6px_rgba(10,22,40,0.09),0_14px_44px_-4px_rgba(10,22,40,0.18)] transition-[border-color,box-shadow] duration-300 hover:border-gold/55 hover:shadow-[0_4px_10px_rgba(10,22,40,0.1),0_24px_56px_-6px_rgba(10,22,40,0.22)]"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onClick={() => navigate(detailPath)}
+      onClick={(e) => {
+        if (e.target instanceof Element && e.target.closest("a, button")) return;
+        navigate(detailPath);
+      }}
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-navy/5">
         {showVideo ? (
@@ -235,6 +236,10 @@ export default function ProjectCard({ project, assetUrl, compact = false }) {
                 src={imgSrc}
                 alt=""
                 aria-hidden
+                width={800}
+                height={600}
+                loading={priority ? "eager" : "lazy"}
+                decoding="async"
                 className={`absolute inset-0 z-[1] h-full w-full object-cover transition-opacity duration-300 ${
                   hovered ? "pointer-events-none opacity-0" : "opacity-100"
                 }`}
@@ -245,6 +250,11 @@ export default function ProjectCard({ project, assetUrl, compact = false }) {
           <img
             src={imgSrc}
             alt={name}
+            width={800}
+            height={600}
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "auto"}
+            decoding="async"
             className="absolute inset-0 h-full w-full object-cover"
           />
         ) : (
@@ -274,7 +284,9 @@ export default function ProjectCard({ project, assetUrl, compact = false }) {
             className="min-w-0 flex-1 line-clamp-2 text-[1.5rem] font-normal leading-[1.12] tracking-tight text-navy sm:text-[1.75rem]"
             style={{ fontFamily: "var(--font-heading)" }}
           >
-            {name}
+            <Link to={detailPath} className="text-inherit no-underline">
+              {name}
+            </Link>
           </h3>
           {!compact && builder  && (
            
@@ -293,12 +305,16 @@ export default function ProjectCard({ project, assetUrl, compact = false }) {
           </p>
           <div className="flex items-center gap-4">
             {telHref ? (
-              <a href={telHref} className="text-navy hover:text-gold">
+              <a href={telHref} className="text-navy hover:text-gold" aria-label={`Call about ${name}`}>
                 <PhoneIcon />
               </a>
             ) : null}
             {whatsAppHref ? (
-              <a href={whatsAppHref} className="text-navy hover:text-gold">
+              <a
+                href={whatsAppHref}
+                className="text-navy hover:text-gold"
+                aria-label={`WhatsApp about ${name}`}
+              >
                 <WhatsAppIcon />
               </a>
             ) : null}

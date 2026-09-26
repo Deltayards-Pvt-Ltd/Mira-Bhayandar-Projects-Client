@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 const LIMIT_OPTIONS = [10, 20, 50];
 
 function getPageNumbers(currentPage, totalPages) {
@@ -14,8 +16,9 @@ function getPageNumbers(currentPage, totalPages) {
  *   page: number;
  *   limit: number;
  *   total: number;
- *   onPageChange: (page: number) => void;
+ *   onPageChange?: (page: number) => void;
  *   onLimitChange: (limit: number) => void;
+ *   hrefForPage?: (page: number) => string;
  * }} props
  */
 export default function ProjectsPagination({
@@ -24,6 +27,7 @@ export default function ProjectsPagination({
   total,
   onPageChange,
   onLimitChange,
+  hrefForPage,
 }) {
   if (total === 0) return null;
 
@@ -59,48 +63,78 @@ export default function ProjectsPagination({
           </select>
         </label>
         <div className="flex flex-wrap items-center gap-1">
-          <button
-            type="button"
+          <PageControl
+            href={hrefForPage?.(page - 1)}
             disabled={page <= 1}
-            onClick={() => onPageChange(page - 1)}
-            className="rounded-lg border border-navy/15 px-3 py-1.5 text-sm text-navy transition hover:border-gold/40 hover:text-gold disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-lg border border-navy/15 px-3 py-1.5 text-sm text-navy no-underline transition hover:border-gold/40 hover:text-gold"
+            onClick={() => onPageChange?.(page - 1)}
           >
             Prev
-          </button>
+          </PageControl>
           {pages.map((n, i) => {
             const prev = pages[i - 1];
             const showEllipsis = i > 0 && prev != null && n - prev > 1;
+            const current = n === page;
             return (
               <span key={n} className="flex items-center gap-1">
                 {showEllipsis ? (
                   <span className="px-1 text-sm text-navy/40">…</span>
                 ) : null}
-                <button
-                  type="button"
-                  onClick={() => onPageChange(n)}
-                  aria-current={n === page ? "page" : undefined}
+                <PageControl
+                  href={hrefForPage?.(n)}
+                  current={current}
                   className={
-                    n === page
-                      ? "min-w-[2.25rem] rounded-lg border border-gold/50 bg-gold/10 px-2 py-1.5 text-sm font-medium text-gold"
-                      : "min-w-[2.25rem] rounded-lg border border-navy/15 px-2 py-1.5 text-sm text-navy transition hover:border-gold/40 hover:text-gold"
+                    current
+                      ? "min-w-[2.25rem] rounded-lg border border-gold/50 bg-gold/10 px-2 py-1.5 text-center text-sm font-medium text-gold no-underline"
+                      : "min-w-[2.25rem] rounded-lg border border-navy/15 px-2 py-1.5 text-center text-sm text-navy no-underline transition hover:border-gold/40 hover:text-gold"
                   }
+                  onClick={() => onPageChange?.(n)}
                 >
                   {n}
-                </button>
+                </PageControl>
               </span>
             );
           })}
-          <button
-            type="button"
+          <PageControl
+            href={hrefForPage?.(page + 1)}
             disabled={page >= totalPages}
-            onClick={() => onPageChange(page + 1)}
-            className="rounded-lg border border-navy/15 px-3 py-1.5 text-sm text-navy transition hover:border-gold/40 hover:text-gold disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-lg border border-navy/15 px-3 py-1.5 text-sm text-navy no-underline transition hover:border-gold/40 hover:text-gold"
+            onClick={() => onPageChange?.(page + 1)}
           >
             Next
-          </button>
+          </PageControl>
         </div>
       </div>
     </nav>
+  );
+}
+
+function PageControl({ href, disabled, current, className, children, onClick }) {
+  if (disabled) {
+    return (
+      <span className={`${className} cursor-not-allowed opacity-40`} aria-disabled="true">
+        {children}
+      </span>
+    );
+  }
+
+  if (href) {
+    return (
+      <Link to={href} className={className} aria-current={current ? "page" : undefined}>
+        {children}
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-current={current ? "page" : undefined}
+      className={className}
+    >
+      {children}
+    </button>
   );
 }
 

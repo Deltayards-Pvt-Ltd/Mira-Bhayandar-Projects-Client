@@ -8,11 +8,15 @@ import ProjectsPagination, { DEFAULT_PROJECTS_LIMIT } from "../components/Projec
 import {
   buildProjectsSearchParams,
   filterProjects,
+  hrefWithPage,
+  parsePageParam,
   parseProjectsSearchParams,
+  withPreservedTracking,
 } from "../utils/projectsFilters";
 import UpcomingProjects from "../components/upcomingProjects";
 import Seo from "../components/Seo";
-import { PROJECTS_LISTING_JSON_LD, PROJECTS_LISTING_SEO } from "../seo/projectsListingSeo";
+import Breadcrumbs from "../components/Breadcrumbs";
+import { buildProjectsListingJsonLd, PROJECTS_LISTING_SEO } from "../seo/projectsListingSeo";
 
 function toggle(list, value) {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
@@ -27,7 +31,6 @@ export default function Projects() {
   const backendUrl = ctx?.backendUrl ?? "";
   const refetchProjects = ctx?.refetchProjects;
 
-  const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(DEFAULT_PROJECTS_LIMIT);
 
   useEffect(() => {
@@ -60,7 +63,14 @@ export default function Projects() {
       const propertyTypes =
         overrides.propertyTypes !== undefined ? overrides.propertyTypes : propertyTypeSel;
       setSearchParams(
-        buildProjectsSearchParams({ q, areas, configurations, propertyTypes }),
+        (prev) => {
+          const next = withPreservedTracking(
+            prev,
+            buildProjectsSearchParams({ q, areas, configurations, propertyTypes }),
+          );
+          next.delete("page");
+          return next;
+        },
         { replace: true },
       );
     },
@@ -81,14 +91,7 @@ export default function Projects() {
   const visibleCount = visibleProjects.length;
   const total = allProjects.length;
   const totalPages = Math.max(1, Math.ceil(visibleCount / limit));
-
-  useEffect(() => {
-    setPage(1);
-  }, [appliedSearch, areaSel, configSel, propertyTypeSel]);
-
-  useEffect(() => {
-    if (page > totalPages) setPage(totalPages);
-  }, [page, totalPages]);
+  const page = Math.min(parsePageParam(searchParams), totalPages);
 
   const paginatedProjects = useMemo(() => {
     const start = (page - 1) * limit;
@@ -97,7 +100,14 @@ export default function Projects() {
 
   const handleLimitChange = (nextLimit) => {
     setLimit(nextLimit);
-    setPage(1);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("page");
+        return next;
+      },
+      { replace: true },
+    );
   };
 
   const subline = useMemo(() => {
@@ -119,13 +129,20 @@ export default function Projects() {
         title={PROJECTS_LISTING_SEO.title}
         description={PROJECTS_LISTING_SEO.description}
         canonical="/projects"
-        jsonLd={PROJECTS_LISTING_JSON_LD}
+        jsonLd={buildProjectsListingJsonLd()}
       />
       <section
         className="bg-navy-gradient noise-overlay relative border-b border-white/10"
         aria-labelledby="projects-page-heading"
       >
         <div className="relative z-[2] mx-auto max-w-7xl px-4 pb-12 pt-[calc(5.5rem+env(safe-area-inset-top,0px))] text-center sm:px-6 sm:pb-14 sm:pt-28 md:pt-32 md:pb-16 lg:px-8">
+          <Breadcrumbs
+            align="center"
+            items={[
+              { to: "/", label: "Home" },
+              { label: "All Projects" },
+            ]}
+          />
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-gold-light">
             Our portfolio
           </p>
@@ -206,15 +223,20 @@ export default function Projects() {
         ) : (
           <>
             <div className="grid gap-6 sm:grid-cols-2 sm:gap-8 lg:grid-cols-3">
-              {paginatedProjects.map((p) => (
-                <ProjectCard key={String(p._id)} project={p} assetUrl={assetUrl} />
+              {paginatedProjects.map((p, index) => (
+                <ProjectCard
+                  key={String(p._id)}
+                  project={p}
+                  assetUrl={assetUrl}
+                  priority={page === 1 && index === 0}
+                />
               ))}
             </div>
             <ProjectsPagination
               page={page}
               limit={limit}
               total={visibleCount}
-              onPageChange={setPage}
+              hrefForPage={(n) => hrefWithPage("/projects", searchParams, n)}
               onLimitChange={handleLimitChange}
             />
           </>

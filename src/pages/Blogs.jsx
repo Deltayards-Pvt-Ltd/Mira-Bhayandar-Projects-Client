@@ -1,18 +1,23 @@
 import { useContext, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
 import BlogCard from "../components/BlogCard";
 import DreamHomeCta from "../components/DreamHomeCta";
 import ProjectsPagination, { DEFAULT_PROJECTS_LIMIT } from "../components/ProjectsPagination";
+import Seo from "../components/Seo";
+import Breadcrumbs from "../components/Breadcrumbs";
+import { BLOGS_LISTING_SEO, buildBlogsListingJsonLd } from "../seo/blogSeo";
+import { hrefWithPage, parsePageParam } from "../utils/projectsFilters";
 
 export default function Blogs() {
   const ctx = useContext(AppContext);
+  const [searchParams, setSearchParams] = useSearchParams();
   const blogs = useMemo(() => ctx?.blogs ?? [], [ctx?.blogs]);
   const loading = ctx?.blogsLoading ?? false;
   const assetUrl = ctx?.assetUrl ?? ((p) => p ?? "");
   const backendUrl = ctx?.backendUrl ?? "";
   const refetchBlogs = ctx?.refetchBlogs;
 
-  const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(DEFAULT_PROJECTS_LIMIT);
 
   useEffect(() => {
@@ -22,10 +27,7 @@ export default function Blogs() {
 
   const total = blogs.length;
   const totalPages = Math.max(1, Math.ceil(total / limit));
-
-  useEffect(() => {
-    if (page > totalPages) setPage(totalPages);
-  }, [page, totalPages]);
+  const page = Math.min(parsePageParam(searchParams), totalPages);
 
   const paginatedBlogs = useMemo(() => {
     const start = (page - 1) * limit;
@@ -34,7 +36,14 @@ export default function Blogs() {
 
   const handleLimitChange = (nextLimit) => {
     setLimit(nextLimit);
-    setPage(1);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("page");
+        return next;
+      },
+      { replace: true },
+    );
   };
 
   const subline = useMemo(() => {
@@ -45,11 +54,24 @@ export default function Blogs() {
 
   return (
     <div className="min-h-full bg-[#fdfbf7] text-navy">
+      <Seo
+        title={BLOGS_LISTING_SEO.title}
+        description={BLOGS_LISTING_SEO.description}
+        canonical="/blogs"
+        jsonLd={buildBlogsListingJsonLd()}
+      />
       <section
         className="bg-navy-gradient noise-overlay relative border-b border-white/10"
         aria-labelledby="blogs-page-heading"
       >
         <div className="relative z-[2] mx-auto max-w-7xl px-4 pb-12 pt-[calc(5.5rem+env(safe-area-inset-top,0px))] text-center sm:px-6 sm:pb-14 sm:pt-28 md:pt-32 md:pb-16 lg:px-8">
+          <Breadcrumbs
+            align="center"
+            items={[
+              { to: "/", label: "Home" },
+              { label: "All Blogs" },
+            ]}
+          />
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-gold-light">
             Stay informed
           </p>
@@ -84,6 +106,7 @@ export default function Blogs() {
                   key={blog._id ?? blog.id ?? index}
                   blog={blog}
                   assetUrl={assetUrl}
+                  priority={page === 1 && index === 0}
                 />
               ))}
             </div>
@@ -91,7 +114,7 @@ export default function Blogs() {
               page={page}
               limit={limit}
               total={total}
-              onPageChange={setPage}
+              hrefForPage={(n) => hrefWithPage("/blogs", searchParams, n)}
               onLimitChange={handleLimitChange}
             />
           </>

@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import Seo from "../components/Seo";
+import Breadcrumbs from "../components/Breadcrumbs";
+import { buildInfoPageJsonLd } from "../seo/structuredData";
 
 const META = [
   { label: "Last Updated", value: "July 2026" },
@@ -41,6 +43,12 @@ export default function Terms() {
         title="Terms and Conditions"
         description="Terms and Conditions for www.mirabhayandarproperty.com — rules governing use of our Mira Bhayandar real estate discovery and lead generation platform."
         canonical="/terms"
+        jsonLd={buildInfoPageJsonLd({
+          path: "/terms",
+          name: "Terms and Conditions",
+          description:
+            "Terms and Conditions for www.mirabhayandarproperty.com — rules governing use of our Mira Bhayandar real estate discovery and lead generation platform.",
+        })}
       />
 
       <div className="min-h-full bg-[#fdfbf7] text-navy">
@@ -49,6 +57,13 @@ export default function Terms() {
           aria-labelledby="terms-page-heading"
         >
           <div className="relative z-[2] mx-auto max-w-7xl px-4 pb-12 pt-[calc(5.5rem+env(safe-area-inset-top,0px))] text-center sm:px-6 sm:pb-14 sm:pt-28 md:pb-16 md:pt-32 lg:px-8">
+            <Breadcrumbs
+              align="center"
+              items={[
+                { to: "/", label: "Home" },
+                { label: "Terms and Conditions" },
+              ]}
+            />
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-gold-light">
               Legal
             </p>
