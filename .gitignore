@@ -15,7 +15,6 @@ lerna-debug.log*
 
 node_modules
 dist
-media-originals
 dist-ssr
 *.local
 

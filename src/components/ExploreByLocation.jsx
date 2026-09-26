@@ -3,19 +3,19 @@ import { Link } from "react-router-dom";
 const locations = [
   {
     to: "/projects?area=Bhayandar+East",
-    img: "/bhayandar-east.webp",
+    img: "/bhayandar east.png",
     alt: "Bhayandar East",
     name: "Bhayandar East",
   },
   {
     to: "/projects?area=Bhayandar+West",
-    img: "/bhayandar-west.webp",
+    img: "/bhayandar west.png",
     alt: "Bhayandar West",
     name: "Bhayandar West",
   },
   {
     to: "/projects?area=Mira+Road",
-    img: "/mira-road-east.webp",
+    img: "/mira road east.png",
     alt: "Mira Road",
     name: "Mira Road",
   },
@@ -52,7 +52,7 @@ export default function ExploreByLocation() {
                   src={img}
                   alt={alt}
                   width={960}
-                  height={720}
+                  height={640}
                   loading="lazy"
                   decoding="async"
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"

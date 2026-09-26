@@ -1,18 +1,16 @@
-import { lazy } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import AppContextProvider from "./context/AppContext";
 import { AppLayout } from "./components/AppLayout";
 import { ScrollToTop } from "./components/ScrollToTop";
 import Home from "./pages/Home";
-
-const Projects = lazy(() => import("./pages/Projects"));
-const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
-const Blogs = lazy(() => import("./pages/Blogs"));
-const BlogDetail = lazy(() => import("./pages/BlogDetail"));
-const Privacy = lazy(() => import("./pages/Privacy"));
-const Terms = lazy(() => import("./pages/Terms"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+import Projects from "./pages/Projects";
+import ProjectDetail from "./pages/ProjectDetail";
+import Blogs from "./pages/Blogs";
+import BlogDetail from "./pages/BlogDetail";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import NotFound from "./pages/NotFound";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function App() {
