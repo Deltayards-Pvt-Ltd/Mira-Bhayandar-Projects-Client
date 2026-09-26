@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
 import { buildProjectsPath } from "../utils/projectsFilters";
 
-const HERO_VIDEO_SRC = "/videos/hero.mp4";
+const HERO_POSTER_SRC = "/videos/hero-poster.jpg";
 
 function toggle(list, value) {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
@@ -67,12 +67,20 @@ export default function HeroCarousel() {
               muted
               loop
               playsInline
-              preload="metadata"
+              poster={HERO_POSTER_SRC}
+              preload="none"
+              width={1280}
+              height={720}
               aria-hidden="true"
               className="absolute inset-0 h-full w-full object-cover"
               onError={() => setVideoFailed(true)}
             >
-              <source src={HERO_VIDEO_SRC} type="video/mp4" />
+              <source
+                src="/videos/hero-mobile.mp4"
+                type="video/mp4"
+                media="(max-width: 767px)"
+              />
+              <source src="/videos/hero-desktop.mp4" type="video/mp4" />
             </video>
           ) : (
             <div className="absolute inset-0 bg-navy" aria-hidden />

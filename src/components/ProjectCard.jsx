@@ -226,7 +226,7 @@ export default function ProjectCard({ project, assetUrl, compact = false, priori
               loop
               playsInline
               poster={poster}
-              preload="metadata"
+              preload="none"
               onError={() => setVideoFailed(true)}
             >
               <source src={assetUrl(coverVideo)} type="video/mp4" />
