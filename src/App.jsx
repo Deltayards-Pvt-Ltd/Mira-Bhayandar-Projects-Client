@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import AppContextProvider from "./context/AppContext";
 import { AppLayout } from "./components/AppLayout";
+import { MetaPixel } from "./components/MetaPixel";
 import { ScrollToTop } from "./components/ScrollToTop";
 import Home from "./pages/Home";
 import Projects from "./pages/Projects";
@@ -17,6 +18,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <MetaPixel />
       <AppContextProvider>
         <div className="flex min-h-full flex-1 flex-col">
           <ToastContainer
