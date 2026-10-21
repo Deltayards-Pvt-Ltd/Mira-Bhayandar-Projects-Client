@@ -94,10 +94,12 @@ export default function ProjectDetailIntro({ project, assetUrl, onContactClick }
   const configLine = formatConfigDisplay(project?.plans);
   const reraNo = String(project?.reraNo || "").trim();
   const contactNumber = String(project?.contactNumber || "").trim();
+  const whatsappNumber = String(project?.whatsappNumber || "").trim();
   const mobile = contactNumber.replace(/\D/g, "").replace(/^91/, "");
+  const whatsAppMobile = whatsappNumber.replace(/\D/g, "").replace(/^91/, "");
   const telHref = mobile ? `tel:+91${mobile}` : "";
-  const whatsAppHref = mobile
-    ? `https://wa.me/91${mobile}?text=${encodeURIComponent(
+  const whatsAppHref = whatsAppMobile
+    ? `https://wa.me/91${ whatsAppMobile }?text=${encodeURIComponent(
         `Hi, I'm interested in ${name}. Please share more details.`,
       )}`
     : "";
